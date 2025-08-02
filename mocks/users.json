@@ -1,0 +1,74 @@
+{
+  "patients": [
+    {
+      "id": "patient_001",
+      "userId": "user_2example1234567890",
+      "firstName": "John",
+      "lastName": "Smith",
+      "email": "john.smith@email.com",
+      "dateOfBirth": "1985-03-15",
+      "phoneNumber": "+1-555-0123",
+      "allergies": ["Penicillin", "Shellfish"],
+      "conditions": ["Hypertension", "Type 2 Diabetes", "High Cholesterol"],
+      "emergencyContact": {
+        "name": "Jane Smith",
+        "phone": "+1-555-0124",
+        "relationship": "Spouse"
+      }
+    },
+    {
+      "id": "patient_002",
+      "userId": "user_2example2345678901",
+      "firstName": "Maria",
+      "lastName": "Garcia",
+      "email": "maria.garcia@email.com",
+      "dateOfBirth": "1978-07-22",
+      "phoneNumber": "+1-555-0125",
+      "allergies": ["Latex"],
+      "conditions": ["Hypothyroidism", "GERD"],
+      "emergencyContact": {
+        "name": "Carlos Garcia",
+        "phone": "+1-555-0126",
+        "relationship": "Husband"
+      }
+    }
+  ],
+  "providers": [
+    {
+      "id": "provider_001",
+      "userId": "user_2example3456789012",
+      "firstName": "Sarah",
+      "lastName": "Johnson",
+      "email": "dr.johnson@medicenter.com",
+      "specialization": "Internal Medicine",
+      "npiNumber": "1234567890",
+      "licenseNumber": "MD123456",
+      "organization": "Central Medical Center",
+      "isVerified": true
+    },
+    {
+      "id": "provider_002",
+      "userId": "user_2example4567890123",
+      "firstName": "Michael",
+      "lastName": "Chen",
+      "email": "dr.chen@diabetes.clinic",
+      "specialization": "Endocrinology",
+      "npiNumber": "2345678901",
+      "licenseNumber": "MD234567",
+      "organization": "Diabetes Specialty Clinic",
+      "isVerified": true
+    },
+    {
+      "id": "provider_003",
+      "userId": "user_2example5678901234",
+      "firstName": "Emily",
+      "lastName": "Rodriguez",
+      "email": "dr.rodriguez@gastro.health",
+      "specialization": "Gastroenterology",
+      "npiNumber": "3456789012",
+      "licenseNumber": "MD345678",
+      "organization": "Digestive Health Associates",
+      "isVerified": true
+    }
+  ]
+}

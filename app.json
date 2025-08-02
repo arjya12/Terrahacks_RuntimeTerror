@@ -1,22 +1,28 @@
 {
   "expo": {
-    "name": "my-app",
-    "slug": "my-app",
+    "name": "MedReconcile Pro",
+    "slug": "medreconcile-pro",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "myapp",
     "userInterfaceStyle": "automatic",
-    "newArchEnabled": true,
+    "splash": {
+      "image": "./assets/images/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#fafafa"
+    },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.anonymous.medreconcilepro"
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "edgeToEdgeEnabled": true
+      "package": "com.anonymous.medreconcilepro",
+      "permissions": ["android.permission.CAMERA"]
     },
     "web": {
       "bundler": "metro",
@@ -25,13 +31,11 @@
     },
     "plugins": [
       "expo-router",
+      "expo-secure-store",
       [
-        "expo-splash-screen",
+        "expo-camera",
         {
-          "image": "./assets/images/splash-icon.png",
-          "imageWidth": 200,
-          "resizeMode": "contain",
-          "backgroundColor": "#ffffff"
+          "cameraPermission": "Allow $(PRODUCT_NAME) to access your camera to scan pill bottles and extract medication information."
         }
       ]
     ],

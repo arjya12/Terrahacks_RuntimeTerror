@@ -1,0 +1,93 @@
+[
+  {
+    "id": "med_001",
+    "name": "Lisinopril",
+    "genericName": "Lisinopril",
+    "dosage": "10mg",
+    "frequency": "Once daily",
+    "prescriber": "Dr. Sarah Johnson",
+    "pharmacy": "CVS Pharmacy",
+    "dateCreated": "2024-01-15T08:30:00Z",
+    "isActive": true,
+    "confidence": 0.95,
+    "notes": "Take with or without food. Monitor blood pressure."
+  },
+  {
+    "id": "med_002",
+    "name": "Metformin",
+    "genericName": "Metformin HCl",
+    "dosage": "500mg",
+    "frequency": "Twice daily with meals",
+    "prescriber": "Dr. Michael Chen",
+    "pharmacy": "Walgreens",
+    "dateCreated": "2024-01-20T14:15:00Z",
+    "isActive": true,
+    "confidence": 0.88,
+    "notes": "Take with meals to reduce stomach upset."
+  },
+  {
+    "id": "med_003",
+    "name": "Atorvastatin",
+    "genericName": "Atorvastatin Calcium",
+    "dosage": "20mg",
+    "frequency": "Once daily at bedtime",
+    "prescriber": "Dr. Sarah Johnson",
+    "pharmacy": "CVS Pharmacy",
+    "dateCreated": "2024-02-01T10:45:00Z",
+    "isActive": true,
+    "confidence": 0.92,
+    "notes": "Avoid grapefruit juice. Monitor for muscle pain."
+  },
+  {
+    "id": "med_004",
+    "name": "Omeprazole",
+    "genericName": "Omeprazole",
+    "dosage": "20mg",
+    "frequency": "Once daily before breakfast",
+    "prescriber": "Dr. Emily Rodriguez",
+    "pharmacy": "Rite Aid",
+    "dateCreated": "2024-02-10T09:20:00Z",
+    "isActive": true,
+    "confidence": 0.9,
+    "notes": "Take 30-60 minutes before eating."
+  },
+  {
+    "id": "med_005",
+    "name": "Aspirin",
+    "genericName": "Acetylsalicylic Acid",
+    "dosage": "81mg",
+    "frequency": "Once daily",
+    "prescriber": "Dr. Sarah Johnson",
+    "pharmacy": "CVS Pharmacy",
+    "dateCreated": "2024-02-15T16:30:00Z",
+    "isActive": true,
+    "confidence": 0.97,
+    "notes": "Low-dose aspirin for cardiovascular protection."
+  },
+  {
+    "id": "med_006",
+    "name": "Synthroid",
+    "genericName": "Levothyroxine Sodium",
+    "dosage": "75mcg",
+    "frequency": "Once daily on empty stomach",
+    "prescriber": "Dr. Michael Chen",
+    "pharmacy": "Walgreens",
+    "dateCreated": "2024-02-20T07:15:00Z",
+    "isActive": true,
+    "confidence": 0.93,
+    "notes": "Take 30-60 minutes before breakfast."
+  },
+  {
+    "id": "med_007",
+    "name": "Ibuprofen",
+    "genericName": "Ibuprofen",
+    "dosage": "400mg",
+    "frequency": "As needed for pain",
+    "prescriber": "Dr. Emily Rodriguez",
+    "pharmacy": "Target Pharmacy",
+    "dateCreated": "2024-01-25T13:45:00Z",
+    "isActive": false,
+    "confidence": 0.85,
+    "notes": "Discontinued due to stomach irritation."
+  }
+]

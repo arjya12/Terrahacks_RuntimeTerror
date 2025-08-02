@@ -1,0 +1,38 @@
+[
+  {
+    "id": "interaction_001",
+    "drugA": "Lisinopril",
+    "drugB": "Ibuprofen",
+    "severity": "moderate",
+    "description": "NSAIDs may reduce the antihypertensive effect of ACE inhibitors and increase the risk of kidney problems.",
+    "mechanism": "NSAIDs can cause sodium retention and vasoconstriction, counteracting the blood pressure-lowering effects of ACE inhibitors.",
+    "recommendation": "Monitor blood pressure closely. Consider alternative pain relief options like acetaminophen."
+  },
+  {
+    "id": "interaction_002",
+    "drugA": "Metformin",
+    "drugB": "Atorvastatin",
+    "severity": "minor",
+    "description": "No significant interaction expected between Metformin and Atorvastatin.",
+    "mechanism": "These medications work through different pathways and do not significantly affect each other's metabolism.",
+    "recommendation": "Continue both medications as prescribed. Monitor routine lab values."
+  },
+  {
+    "id": "interaction_003",
+    "drugA": "Synthroid",
+    "drugB": "Omeprazole",
+    "severity": "moderate",
+    "description": "Proton pump inhibitors may decrease the absorption of levothyroxine.",
+    "mechanism": "PPIs reduce stomach acid, which is needed for optimal levothyroxine absorption.",
+    "recommendation": "Separate administration by at least 4 hours. Monitor TSH levels more frequently."
+  },
+  {
+    "id": "interaction_004",
+    "drugA": "Aspirin",
+    "drugB": "Ibuprofen",
+    "severity": "major",
+    "description": "Concurrent use increases risk of gastrointestinal bleeding and may reduce cardioprotective effects of aspirin.",
+    "mechanism": "Both are NSAIDs that increase bleeding risk. Ibuprofen may interfere with aspirin's antiplatelet effects.",
+    "recommendation": "Avoid concurrent use. If pain relief needed, consider acetaminophen instead of ibuprofen."
+  }
+]

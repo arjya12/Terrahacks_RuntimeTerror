@@ -1,0 +1,31 @@
+[
+  {
+    "id": "share_001",
+    "patientId": "patient_001",
+    "providerId": "provider_001",
+    "token": "med_share_abc123def456",
+    "expiresAt": "2024-03-15T23:59:59Z",
+    "isActive": true,
+    "permissions": ["view_medications", "view_basic_info"],
+    "createdAt": "2024-02-15T10:30:00Z"
+  },
+  {
+    "id": "share_002",
+    "patientId": "patient_001",
+    "token": "med_share_xyz789uvw012",
+    "expiresAt": "2024-03-01T23:59:59Z",
+    "isActive": true,
+    "permissions": ["view_medications", "view_basic_info", "view_allergies"],
+    "createdAt": "2024-02-20T14:15:00Z"
+  },
+  {
+    "id": "share_003",
+    "patientId": "patient_002",
+    "providerId": "provider_002",
+    "token": "med_share_hij345klm678",
+    "expiresAt": "2024-02-25T23:59:59Z",
+    "isActive": false,
+    "permissions": ["view_medications"],
+    "createdAt": "2024-02-10T09:45:00Z"
+  }
+]
