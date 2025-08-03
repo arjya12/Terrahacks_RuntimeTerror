@@ -9,11 +9,11 @@ import { useFonts } from "expo-font";
 import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect } from "react";
 import { View } from "react-native";
 import "react-native-reanimated";
 
-import CustomSplashScreen from "@/components/CustomSplashScreen";
+import ErrorBoundary from "@/components/ErrorBoundary";
 import { useColorScheme } from "@/hooks/useColorScheme";
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
@@ -29,8 +29,6 @@ if (!publishableKey) {
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
-  const [isAppReady, setIsAppReady] = useState(false);
-  const [showCustomSplash, setShowCustomSplash] = useState(true);
 
   const [loaded, error] = useFonts({
     SpaceMono: require("../assets/fonts/SpaceMono-Regular.ttf"),
@@ -40,50 +38,34 @@ export default function RootLayout() {
     if (error) throw error;
   }, [error]);
 
-  useEffect(() => {
-    async function prepare() {
-      if (loaded) {
-        // Minimum display time for premium experience
-        await new Promise((resolve) => setTimeout(resolve, 2200));
-        setIsAppReady(true);
-      }
-    }
-    prepare();
-  }, [loaded]);
-
   const onLayoutRootView = useCallback(async () => {
-    if (isAppReady) {
+    if (loaded) {
       await SplashScreen.hideAsync();
     }
-  }, [isAppReady]);
+  }, [loaded]);
 
-  const handleCustomSplashComplete = useCallback(() => {
-    setShowCustomSplash(false);
-  }, []);
-
-  if (!isAppReady) {
+  if (!loaded) {
     return null;
   }
 
   return (
-    <ClerkProvider tokenCache={tokenCache} publishableKey={publishableKey}>
-      <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
-        <View style={{ flex: 1 }} onLayout={onLayoutRootView}>
-          <Stack screenOptions={{ headerShown: false }}>
-            <Stack.Screen name="(auth)" />
-            <Stack.Screen name="(home)" />
-            <Stack.Screen name="(tabs)" />
-            <Stack.Screen name="+not-found" options={{ headerShown: true }} />
-          </Stack>
-          <StatusBar style="auto" />
-        </View>
-
-        {showCustomSplash && (
-          <CustomSplashScreen
-            onAnimationComplete={handleCustomSplashComplete}
-          />
-        )}
-      </ThemeProvider>
-    </ClerkProvider>
+    <ErrorBoundary>
+      <ClerkProvider tokenCache={tokenCache} publishableKey={publishableKey}>
+        <ThemeProvider
+          value={colorScheme === "dark" ? DarkTheme : DefaultTheme}
+        >
+          <View style={{ flex: 1 }} onLayout={onLayoutRootView}>
+            <Stack screenOptions={{ headerShown: false }}>
+              <Stack.Screen name="index" />
+              <Stack.Screen name="(auth)" />
+              <Stack.Screen name="(home)" />
+              <Stack.Screen name="(tabs)" />
+              <Stack.Screen name="+not-found" options={{ headerShown: true }} />
+            </Stack>
+            <StatusBar style="auto" />
+          </View>
+        </ThemeProvider>
+      </ClerkProvider>
+    </ErrorBoundary>
   );
 }

@@ -1,27 +1,27 @@
-import { useAuth } from "@clerk/clerk-expo";
-import { Redirect, Stack } from "expo-router";
+import { Stack } from "expo-router";
 
+/**
+ * HomeLayout - Secondary navigation for specific features
+ *
+ * This layout provides navigation for:
+ * - Detailed medication management
+ * - Medication sharing with QR codes
+ * - QR code scanning for providers
+ *
+ * Primary navigation uses tabs - this is for specialized features
+ */
 export default function HomeLayout() {
-  const { isSignedIn } = useAuth();
-
-  if (!isSignedIn) {
-    return <Redirect href={"/(auth)/sign-in"} />;
-  }
-
   return (
     <Stack>
       <Stack.Screen
-        name="index"
-        options={{
-          title: "Home",
-          headerShown: true,
-        }}
-      />
-      <Stack.Screen
         name="medications"
         options={{
-          title: "Medications",
+          title: "My Medications",
           headerShown: true,
+          headerStyle: {
+            backgroundColor: "#3b82f6",
+          },
+          headerTintColor: "white",
         }}
       />
       <Stack.Screen
@@ -29,13 +29,21 @@ export default function HomeLayout() {
         options={{
           title: "Profile",
           headerShown: true,
+          headerStyle: {
+            backgroundColor: "#ef4444",
+          },
+          headerTintColor: "white",
         }}
       />
       <Stack.Screen
         name="sharing"
         options={{
-          title: "Medication Sharing",
+          title: "Share Medications",
           headerShown: true,
+          headerStyle: {
+            backgroundColor: "#f59e0b",
+          },
+          headerTintColor: "white",
         }}
       />
       <Stack.Screen

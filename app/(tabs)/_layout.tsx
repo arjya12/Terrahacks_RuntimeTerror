@@ -1,21 +1,26 @@
-import { useAuth } from "@clerk/clerk-expo";
-import { Redirect, Tabs } from "expo-router";
+import { Tabs } from "expo-router";
 import React from "react";
 import { Platform } from "react-native";
 
 import { HapticTab } from "@/components/HapticTab";
-import { IconSymbol } from "@/components/ui/IconSymbol";
+import { AppIcon } from "@/components/icons/IconSystem";
 import TabBarBackground from "@/components/ui/TabBarBackground";
 import { Colors } from "@/constants/Colors";
 import { useColorScheme } from "@/hooks/useColorScheme";
 
+/**
+ * TabLayout - PRIMARY app navigation with bottom tabs
+ *
+ * This is the main interface users see after authentication.
+ * Provides easy access to core app features:
+ * - Medications: Full medication management with add/edit/delete
+ * - Scan: Camera-based medication bottle scanning with OCR
+ * - Profile: User profile, preferences, and quick actions
+ *
+ * Features enhanced loading states, error handling, and comprehensive UX
+ */
 export default function TabLayout() {
-  const { isSignedIn } = useAuth();
   const colorScheme = useColorScheme();
-
-  if (!isSignedIn) {
-    return <Redirect href="/(auth)/sign-in" />;
-  }
 
   return (
     <Tabs
@@ -37,17 +42,26 @@ export default function TabLayout() {
         name="index"
         options={{
           title: "Medications",
-          tabBarIcon: ({ color }) => (
-            <IconSymbol size={28} name="pills.fill" color={color} />
+          tabBarIcon: ({ color, focused }) => (
+            <AppIcon
+              name="nav_medications"
+              size="large"
+              color={focused ? "active" : "default"}
+            />
           ),
+          tabBarBadge: undefined, // Could show medication count
         }}
       />
       <Tabs.Screen
         name="explore"
         options={{
           title: "Scan",
-          tabBarIcon: ({ color }) => (
-            <IconSymbol size={28} name="camera.fill" color={color} />
+          tabBarIcon: ({ color, focused }) => (
+            <AppIcon
+              name="nav_scan"
+              size="large"
+              color={focused ? "active" : "default"}
+            />
           ),
         }}
       />
@@ -55,8 +69,12 @@ export default function TabLayout() {
         name="profile"
         options={{
           title: "Profile",
-          tabBarIcon: ({ color }) => (
-            <IconSymbol size={28} name="person.fill" color={color} />
+          tabBarIcon: ({ color, focused }) => (
+            <AppIcon
+              name="nav_profile"
+              size="large"
+              color={focused ? "active" : "default"}
+            />
           ),
         }}
       />

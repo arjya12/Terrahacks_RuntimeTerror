@@ -13,9 +13,28 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
-import { IconSymbol } from "@/components/ui/IconSymbol";
+import { AppIcon } from "@/components/icons/IconSystem";
 import { mockDataService } from "@/mocks/mockService";
 
+/**
+ * ScanScreen - Camera interface for scanning medication bottles with OCR processing
+ *
+ * Features:
+ * - Real-time camera preview with capture functionality
+ * - Mock OCR processing with confidence scoring
+ * - Loading states during image processing
+ * - User confirmation flow for extracted medication data
+ * - Automatic medication addition to user's list
+ * - Comprehensive error handling for camera and processing failures
+ * - Permission management with graceful degradation
+ *
+ * User Experience:
+ * - Visual guidance during scanning process
+ * - Clear loading indicators during OCR processing
+ * - Confirmation dialog with extracted data preview
+ * - Option to retake photo or accept results
+ * - Seamless navigation back to medication list after adding
+ */
 export default function ScanScreen() {
   const [permission, requestPermission] = useCameraPermissions();
   const camera = useRef<CameraView>(null);
@@ -42,7 +61,7 @@ export default function ScanScreen() {
       });
 
       // Process the image with mock OCR
-      const extractedData = await mockDataService.mockOCRProcessing(photo.uri);
+      const extractedData = await mockDataService.scanMedication(photo.uri);
 
       // Show results and navigate to medication management
       Alert.alert(
@@ -64,16 +83,16 @@ export default function ScanScreen() {
             onPress: async () => {
               try {
                 // Add medication to the list
-                mockDataService.addMedication({
+                await mockDataService.addMedication({
                   name: extractedData.name || "Unknown Medication",
                   dosage: extractedData.dosage || "Unknown",
                   frequency: extractedData.frequency || "As prescribed",
                   prescriber: extractedData.prescriber || "Unknown Doctor",
                   pharmacy: extractedData.pharmacy || "Unknown Pharmacy",
-                  dateCreated: new Date().toISOString(),
-                  isActive: true,
-                  confidence: extractedData.confidence || 0.8,
-                  notes: "Added via camera scan",
+                  dateAdded: new Date().toISOString(),
+                  notes: `Added via camera scan (Confidence: ${Math.round(
+                    (extractedData.confidence || 0) * 100
+                  )}%)`,
                 });
 
                 // Show success message
@@ -109,7 +128,7 @@ export default function ScanScreen() {
     return (
       <SafeAreaView style={styles.container}>
         <ThemedView style={styles.permissionContainer}>
-          <IconSymbol name="camera.fill" size={64} color="#6b7280" />
+          <AppIcon name="nav_scan" size="large" color="disabled" />
           <ThemedText style={styles.permissionTitle}>
             Camera Permission Required
           </ThemedText>
@@ -183,7 +202,7 @@ export default function ScanScreen() {
               style={styles.backButton}
               onPress={() => router.push("/(tabs)/")}
             >
-              <IconSymbol name="arrow.left" size={24} color="white" />
+              <AppIcon name="control_back" size="medium" color="white" />
             </TouchableOpacity>
 
             <TouchableOpacity
@@ -206,7 +225,7 @@ export default function ScanScreen() {
                 )
               }
             >
-              <IconSymbol name="questionmark.circle" size={24} color="white" />
+              <AppIcon name="profile_help" size="medium" color="white" />
             </TouchableOpacity>
           </View>
         </View>

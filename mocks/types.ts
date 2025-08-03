@@ -1,82 +1,158 @@
-import { z } from "zod";
+export interface Medication {
+  id: string;
+  name: string;
+  dosage: string;
+  frequency: string;
+  prescriber: string;
+  pharmacy: string;
+  dateAdded: string;
+  notes?: string;
+  genericName?: string;
+  confidence?: number;
+  isActive?: boolean;
+}
 
-// Medication schemas
-export const MedicationSchema = z.object({
-  id: z.string(),
-  name: z.string(),
-  genericName: z.string().optional(),
-  dosage: z.string(),
-  frequency: z.string(),
-  prescriber: z.string(),
-  pharmacy: z.string(),
-  dateCreated: z.string(),
-  isActive: z.boolean(),
-  confidence: z.number().min(0).max(1),
-  imageUri: z.string().optional(),
-  notes: z.string().optional(),
-});
+export interface EmergencyContact {
+  name: string;
+  relationship: string;
+  phoneNumber: string;
+}
 
-export const UserRoleSchema = z.enum(["patient", "provider"]);
+export interface MedicalInfo {
+  allergies: string[];
+  conditions: string[];
+  insuranceProvider: string;
+  policyNumber: string;
+}
 
-export const PatientProfileSchema = z.object({
-  id: z.string(),
-  userId: z.string(), // Clerk user ID
-  firstName: z.string(),
-  lastName: z.string(),
-  email: z.string().email(),
-  dateOfBirth: z.string(),
-  phoneNumber: z.string().optional(),
-  allergies: z.array(z.string()),
-  conditions: z.array(z.string()),
-  emergencyContact: z
-    .object({
-      name: z.string(),
-      phone: z.string(),
-      relationship: z.string(),
-    })
-    .optional(),
-});
+export interface UserPreferences {
+  notifications: boolean;
+  shareWithProviders: boolean;
+  reminderFrequency: string;
+}
 
-export const ProviderProfileSchema = z.object({
-  id: z.string(),
-  userId: z.string(), // Clerk user ID
-  firstName: z.string(),
-  lastName: z.string(),
-  email: z.string().email(),
-  specialization: z.string(),
-  npiNumber: z.string(),
-  licenseNumber: z.string(),
-  organization: z.string(),
-  isVerified: z.boolean(),
-});
+export interface PatientProfile {
+  id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  dateOfBirth: string;
+  phoneNumber: string;
+  emergencyContact: EmergencyContact;
+  medicalInfo: MedicalInfo;
+  preferences: UserPreferences;
+}
 
-export const DrugInteractionSchema = z.object({
-  id: z.string(),
-  drugA: z.string(),
-  drugB: z.string(),
-  severity: z.enum(["minor", "moderate", "major"]),
-  description: z.string(),
-  mechanism: z.string(),
-  recommendation: z.string(),
-});
+export interface SharingToken {
+  id: string;
+  token: string;
+  patientId: string;
+  createdAt: string;
+  expiresAt: string;
+  permissions: string[];
+  isActive: boolean;
+}
 
-export const SharingTokenSchema = z.object({
-  id: z.string(),
-  patientId: z.string(),
-  providerId: z.string().optional(),
-  token: z.string(),
-  expiresAt: z.string(),
-  isActive: z.boolean(),
-  permissions: z.array(z.string()),
-  createdAt: z.string(),
-});
+export interface ScannedMedicationData {
+  name: string;
+  dosage: string;
+  frequency: string;
+  prescriber: string;
+  pharmacy: string;
+  confidence: number;
+  lowConfidenceFields: string[];
+}
 
-// Type exports
-export interface Medication extends z.infer<typeof MedicationSchema> {}
-export interface PatientProfile extends z.infer<typeof PatientProfileSchema> {}
-export interface ProviderProfile
-  extends z.infer<typeof ProviderProfileSchema> {}
-export interface DrugInteraction
-  extends z.infer<typeof DrugInteractionSchema> {}
-export interface SharingToken extends z.infer<typeof SharingTokenSchema> {}
-export type UserRole = z.infer<typeof UserRoleSchema>;
+export interface MedicationFormData {
+  name: string;
+  genericName?: string;
+  dosage: string;
+  frequency: string;
+  prescriber: string;
+  pharmacy: string;
+  notes?: string;
+  isActive: boolean;
+}
+
+export interface StepFormData {
+  step1: {
+    name: string;
+    dosage: string;
+    frequency: string;
+  };
+  step2: {
+    prescriber: string;
+    pharmacy: string;
+  };
+  step3: {
+    genericName?: string;
+    notes?: string;
+    isActive: boolean;
+  };
+}
+
+export interface FormValidation {
+  isValid: boolean;
+  errors: Record<string, string>;
+}
+
+export interface DosageOption {
+  value: string;
+  label: string;
+  unit: string;
+}
+
+export interface FrequencyOption {
+  value: string;
+  label: string;
+  description: string;
+}
+
+// Dashboard-specific interfaces for redesign
+export interface DashboardStats {
+  dueToday: number;
+  adherenceRate: number;
+  currentStreak: number;
+  totalMedications: number;
+}
+
+export interface MedicationSchedule {
+  medicationId: string;
+  medicationName: string;
+  dosage: string;
+  scheduledTime: string;
+  taken: boolean;
+  takenAt?: string;
+  missed: boolean;
+  isCritical: boolean;
+}
+
+export interface DailySchedule {
+  date: string;
+  medications: MedicationSchedule[];
+  adherencePercentage: number;
+}
+
+export interface NotificationData {
+  id: string;
+  type:
+    | "missed_dose"
+    | "upcoming_dose"
+    | "refill_reminder"
+    | "streak_milestone";
+  title: string;
+  message: string;
+  medicationId?: string;
+  priority: "low" | "medium" | "high";
+  timestamp: string;
+  read: boolean;
+}
+
+export interface AdherenceData {
+  medicationId: string;
+  adherenceRate: number;
+  streakDays: number;
+  missedDoses: number;
+  totalDoses: number;
+  lastTaken?: string;
+}

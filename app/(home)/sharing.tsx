@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import {
+  ActivityIndicator,
   Alert,
   Modal,
   ScrollView,
@@ -22,9 +23,29 @@ interface SharingCardProps {
   token: SharingToken;
   onRevoke: (token: string) => void;
   onShowQR: (token: SharingToken) => void;
+  isRevoking?: boolean;
 }
 
-function SharingCard({ token, onRevoke, onShowQR }: SharingCardProps) {
+/**
+ * SharingCard - Displays individual sharing token information
+ *
+ * @param token - The sharing token data
+ * @param onRevoke - Callback when revoke button is pressed
+ * @param onShowQR - Callback when QR button is pressed
+ * @param isRevoking - Whether this token is currently being revoked
+ *
+ * Features:
+ * - Expiration status with color-coded badges
+ * - Permission list display
+ * - QR code and revoke action buttons
+ * - Loading state for revoke action
+ */
+function SharingCard({
+  token,
+  onRevoke,
+  onShowQR,
+  isRevoking = false,
+}: SharingCardProps) {
   const isExpired = new Date(token.expiresAt) < new Date();
   const daysLeft = Math.ceil(
     (new Date(token.expiresAt).getTime() - new Date().getTime()) /
@@ -35,9 +56,7 @@ function SharingCard({ token, onRevoke, onShowQR }: SharingCardProps) {
     <ThemedView style={styles.sharingCard}>
       <View style={styles.cardHeader}>
         <View style={styles.cardInfo}>
-          <ThemedText style={styles.cardTitle}>
-            {token.providerId ? "Shared with Provider" : "Open Share Link"}
-          </ThemedText>
+          <ThemedText style={styles.cardTitle}>Open Share Link</ThemedText>
           <ThemedText style={styles.cardSubtitle}>
             {isExpired
               ? "Expired"
@@ -86,12 +105,18 @@ function SharingCard({ token, onRevoke, onShowQR }: SharingCardProps) {
           <Text style={styles.buttonText}>Show QR</Text>
         </TouchableOpacity>
         <TouchableOpacity
-          style={styles.revokeButton}
+          style={[styles.revokeButton, isRevoking && styles.buttonDisabled]}
           onPress={() => onRevoke(token.token)}
-          disabled={!token.isActive}
+          disabled={!token.isActive || isRevoking}
         >
-          <IconSymbol name="xmark" size={16} color="white" />
-          <Text style={styles.buttonText}>Revoke</Text>
+          {isRevoking ? (
+            <ActivityIndicator size="small" color="white" />
+          ) : (
+            <IconSymbol name="xmark" size={16} color="white" />
+          )}
+          <Text style={styles.buttonText}>
+            {isRevoking ? "Revoking..." : "Revoke"}
+          </Text>
         </TouchableOpacity>
       </View>
     </ThemedView>
@@ -280,39 +305,57 @@ function CreateShareModal({
   );
 }
 
+/**
+ * SharingScreen - Manages medication sharing with healthcare providers
+ *
+ * Features:
+ * - Create secure sharing tokens with customizable permissions and expiration
+ * - Display active sharing tokens with expiration status
+ * - Generate QR codes for easy provider access
+ * - Revoke sharing access when needed
+ * - Loading states for all async operations
+ * - Comprehensive error handling
+ */
 export default function SharingScreen() {
   const [sharingTokens, setSharingTokens] = useState<SharingToken[]>([]);
   const [showQRModal, setShowQRModal] = useState(false);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [selectedToken, setSelectedToken] = useState<SharingToken | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isCreating, setIsCreating] = useState(false);
+  const [revokingTokens, setRevokingTokens] = useState<Set<string>>(new Set());
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     loadSharingTokens();
   }, []);
 
-  const loadSharingTokens = () => {
-    // In a real app, this would filter by current user
-    // For demo, we'll show all tokens
-    const tokens =
-      mockDataService.getAllPatients().length > 0
-        ? [
-            mockDataService.createSharingToken(
-              "patient_001",
-              ["view_medications", "view_basic_info"],
-              48
-            ),
-          ]
-        : [];
-    setSharingTokens(tokens);
+  const loadSharingTokens = async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      const tokens = await mockDataService.getActiveSharingTokens();
+      setSharingTokens(tokens);
+    } catch (error) {
+      console.error("Failed to load sharing tokens:", error);
+      setError("Failed to load sharing tokens. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const handleCreateShare = (hours: number, permissions: string[]) => {
-    const token = mockDataService.createSharingToken(
-      "patient_001",
-      permissions,
-      hours
-    );
-    setSharingTokens((prev) => [token, ...prev]);
+  const handleCreateShare = async (hours: number, permissions: string[]) => {
+    try {
+      setIsCreating(true);
+      const token = await mockDataService.generateSharingToken(permissions);
+      setSharingTokens((prev) => [token, ...prev]);
+      setShowCreateModal(false);
+    } catch (error) {
+      console.error("Failed to create sharing token:", error);
+      Alert.alert("Error", "Failed to create sharing token. Please try again.");
+    } finally {
+      setIsCreating(false);
+    }
   };
 
   const handleRevokeShare = (tokenString: string) => {
@@ -321,13 +364,28 @@ export default function SharingScreen() {
       {
         text: "Revoke",
         style: "destructive",
-        onPress: () => {
-          mockDataService.revokeSharingToken(tokenString);
-          setSharingTokens((prev) =>
-            prev.map((t) =>
-              t.token === tokenString ? { ...t, isActive: false } : t
-            )
-          );
+        onPress: async () => {
+          try {
+            setRevokingTokens((prev) => new Set(prev).add(tokenString));
+            await mockDataService.revokeSharingToken(tokenString);
+            setSharingTokens((prev) =>
+              prev.map((t) =>
+                t.token === tokenString ? { ...t, isActive: false } : t
+              )
+            );
+          } catch (error) {
+            console.error("Failed to revoke sharing token:", error);
+            Alert.alert(
+              "Error",
+              "Failed to revoke sharing token. Please try again."
+            );
+          } finally {
+            setRevokingTokens((prev) => {
+              const newSet = new Set(prev);
+              newSet.delete(tokenString);
+              return newSet;
+            });
+          }
         },
       },
     ]);
@@ -337,6 +395,52 @@ export default function SharingScreen() {
     setSelectedToken(token);
     setShowQRModal(true);
   };
+
+  const renderLoadingState = () => (
+    <ThemedView style={styles.loadingContainer}>
+      <ActivityIndicator size="large" color="#3b82f6" />
+      <ThemedText style={styles.loadingText}>
+        Loading sharing tokens...
+      </ThemedText>
+    </ThemedView>
+  );
+
+  const renderErrorState = () => (
+    <ThemedView style={styles.errorContainer}>
+      <IconSymbol
+        name="exclamationmark.triangle.fill"
+        size={48}
+        color="#ef4444"
+      />
+      <ThemedText style={styles.errorTitle}>Unable to Load</ThemedText>
+      <ThemedText style={styles.errorText}>{error}</ThemedText>
+      <TouchableOpacity style={styles.retryButton} onPress={loadSharingTokens}>
+        <Text style={styles.retryButtonText}>Try Again</Text>
+      </TouchableOpacity>
+    </ThemedView>
+  );
+
+  if (isLoading) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <ThemedView style={styles.header}>
+          <ThemedText style={styles.headerTitle}>Medication Sharing</ThemedText>
+        </ThemedView>
+        {renderLoadingState()}
+      </SafeAreaView>
+    );
+  }
+
+  if (error) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <ThemedView style={styles.header}>
+          <ThemedText style={styles.headerTitle}>Medication Sharing</ThemedText>
+        </ThemedView>
+        {renderErrorState()}
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView style={styles.container}>
@@ -351,10 +455,15 @@ export default function SharingScreen() {
             </ThemedText>
           </View>
           <TouchableOpacity
-            style={styles.createButton}
+            style={[styles.createButton, isCreating && styles.buttonDisabled]}
             onPress={() => setShowCreateModal(true)}
+            disabled={isCreating}
           >
-            <IconSymbol name="plus" size={24} color="white" />
+            {isCreating ? (
+              <ActivityIndicator size={24} color="white" />
+            ) : (
+              <IconSymbol name="plus" size={24} color="white" />
+            )}
           </TouchableOpacity>
         </View>
       </ThemedView>
@@ -376,6 +485,7 @@ export default function SharingScreen() {
               token={token}
               onRevoke={handleRevokeShare}
               onShowQR={handleShowQR}
+              isRevoking={revokingTokens.has(token.token)}
             />
           ))
         )}
@@ -669,5 +779,50 @@ const styles = StyleSheet.create({
   permissionLabel: {
     fontSize: 16,
     color: "#374151",
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingHorizontal: 32,
+  },
+  loadingText: {
+    fontSize: 16,
+    marginTop: 16,
+    opacity: 0.7,
+  },
+  errorContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingHorizontal: 32,
+  },
+  errorTitle: {
+    fontSize: 20,
+    fontWeight: "bold",
+    marginTop: 16,
+    marginBottom: 8,
+    textAlign: "center",
+  },
+  errorText: {
+    fontSize: 16,
+    textAlign: "center",
+    opacity: 0.7,
+    lineHeight: 22,
+    marginBottom: 24,
+  },
+  retryButton: {
+    backgroundColor: "#3b82f6",
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: 8,
+  },
+  retryButtonText: {
+    color: "white",
+    fontSize: 16,
+    fontWeight: "600",
+  },
+  buttonDisabled: {
+    opacity: 0.6,
   },
 });

@@ -1,4 +1,5 @@
-import { useSignIn } from "@clerk/clerk-expo";
+import { clearAuthCache } from "@/utils/authUtils";
+import { useAuth, useSignIn } from "@clerk/clerk-expo";
 import { Link, useRouter } from "expo-router";
 import React from "react";
 import {
@@ -12,30 +13,94 @@ import {
 
 export default function SignInScreen() {
   const { signIn, setActive, isLoaded } = useSignIn();
+  const { signOut } = useAuth();
   const router = useRouter();
 
   const [emailAddress, setEmailAddress] = React.useState("");
   const [password, setPassword] = React.useState("");
+  const [isClearing, setIsClearing] = React.useState(false);
+
+  // Function to clear existing session and retry login
+  const clearSessionAndRetry = async () => {
+    try {
+      setIsClearing(true);
+      console.log("🧹 Clearing existing session and cache...");
+
+      // Sign out first
+      try {
+        await signOut();
+      } catch (error) {
+        console.warn("⚠️ Sign out failed (might not be signed in):", error);
+      }
+
+      // Clear all authentication cache
+      await clearAuthCache();
+
+      // Delay to ensure everything is cleared
+      setTimeout(async () => {
+        console.log("🔄 Retrying sign in after cache clear...");
+        await onSignInPress();
+        setIsClearing(false);
+      }, 1000);
+    } catch (error) {
+      console.error("❌ Error clearing session:", error);
+      setIsClearing(false);
+      Alert.alert(
+        "Error",
+        "Failed to clear session. Please close and reopen the app.",
+        [{ text: "OK" }]
+      );
+    }
+  };
 
   const onSignInPress = async () => {
-    if (!isLoaded) return;
+    if (!isLoaded || isClearing) return;
 
     try {
+      console.log("🔐 Attempting sign in...");
+
       const signInAttempt = await signIn.create({
         identifier: emailAddress,
         password,
       });
 
       if (signInAttempt.status === "complete") {
+        console.log("✅ Sign in successful");
         await setActive({ session: signInAttempt.createdSessionId });
-        router.replace("/(home)");
+
+        // Navigate to main app after successful authentication
+        console.log("🎯 Navigating to main app after successful login");
+        router.replace("/(tabs)");
       } else {
-        console.error(JSON.stringify(signInAttempt, null, 2));
         Alert.alert("Error", "Sign in failed. Please try again.");
       }
     } catch (err: any) {
-      console.error(JSON.stringify(err, null, 2));
-      Alert.alert("Error", err.errors?.[0]?.message || "Sign in failed");
+      console.error("❌ Sign in error:", err);
+
+      const errorMessage = err.errors?.[0]?.message || "Sign in failed";
+
+      // Handle "Session already exists" error specifically
+      if (
+        errorMessage.includes("Session already exists") ||
+        errorMessage.includes("session_exists")
+      ) {
+        Alert.alert(
+          "Session Conflict",
+          "A session already exists. Would you like to clear it and try again?",
+          [
+            {
+              text: "Cancel",
+              style: "cancel",
+            },
+            {
+              text: "Clear & Retry",
+              onPress: clearSessionAndRetry,
+            },
+          ]
+        );
+      } else {
+        Alert.alert("Error", errorMessage);
+      }
     }
   };
 
@@ -60,8 +125,22 @@ export default function SignInScreen() {
         onChangeText={(password) => setPassword(password)}
       />
 
-      <TouchableOpacity style={styles.button} onPress={onSignInPress}>
-        <Text style={styles.buttonText}>Continue</Text>
+      <TouchableOpacity
+        style={[styles.button, isClearing && styles.buttonDisabled]}
+        onPress={onSignInPress}
+        disabled={isClearing}
+      >
+        <Text style={styles.buttonText}>
+          {isClearing ? "Clearing Session..." : "Continue"}
+        </Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity
+        style={styles.clearButton}
+        onPress={clearSessionAndRetry}
+        disabled={isClearing}
+      >
+        <Text style={styles.clearButtonText}>Clear Session & Sign In</Text>
       </TouchableOpacity>
 
       <View style={styles.linkContainer}>
@@ -102,9 +181,25 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     justifyContent: "center",
     alignItems: "center",
-    marginBottom: 20,
+    marginBottom: 15,
+  },
+  buttonDisabled: {
+    backgroundColor: "#ccc",
   },
   buttonText: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "600",
+  },
+  clearButton: {
+    backgroundColor: "#FF6B6B",
+    height: 50,
+    borderRadius: 8,
+    justifyContent: "center",
+    alignItems: "center",
+    marginBottom: 20,
+  },
+  clearButtonText: {
     color: "#fff",
     fontSize: 16,
     fontWeight: "600",

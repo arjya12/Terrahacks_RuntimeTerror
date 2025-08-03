@@ -46,7 +46,10 @@ export default function SignUpScreen() {
 
       if (signUpAttempt.status === "complete") {
         await setActive({ session: signUpAttempt.createdSessionId });
-        router.replace("/(home)");
+
+        // Navigate to main app after successful registration
+        console.log("🎯 Sign up complete - navigating to main app");
+        router.replace("/(tabs)");
       } else {
         console.error(JSON.stringify(signUpAttempt, null, 2));
         Alert.alert("Error", "Verification failed. Please try again.");

@@ -32,9 +32,22 @@ function InfoCard({ title, children }: InfoCardProps) {
 export default function ProfileScreen() {
   const { userId } = useAuth();
   const { user } = useUser();
-  const patientProfile = userId
-    ? mockDataService.getPatientProfile(userId)
-    : null;
+  const [patientProfile, setPatientProfile] = React.useState(null);
+
+  React.useEffect(() => {
+    const loadProfile = async () => {
+      try {
+        const profile = await mockDataService.getUserProfile();
+        setPatientProfile(profile);
+      } catch (error) {
+        console.error("Failed to load patient profile:", error);
+      }
+    };
+
+    if (userId) {
+      loadProfile();
+    }
+  }, [userId]);
 
   const navigateToMedications = () => {
     router.push("/(home)/medications");
@@ -83,29 +96,31 @@ export default function ProfileScreen() {
           )}
         </InfoCard>
 
-        {patientProfile?.allergies && patientProfile.allergies.length > 0 && (
-          <InfoCard title="Allergies">
-            {patientProfile.allergies.map((allergy, index) => (
-              <View key={index} style={styles.listItem}>
-                <View style={styles.allergyBadge}>
-                  <Text style={styles.allergyText}>{allergy}</Text>
+        {patientProfile?.medicalInfo?.allergies &&
+          patientProfile.medicalInfo.allergies.length > 0 && (
+            <InfoCard title="Allergies">
+              {patientProfile.medicalInfo.allergies.map((allergy, index) => (
+                <View key={index} style={styles.listItem}>
+                  <View style={styles.allergyBadge}>
+                    <Text style={styles.allergyText}>{allergy}</Text>
+                  </View>
                 </View>
-              </View>
-            ))}
-          </InfoCard>
-        )}
+              ))}
+            </InfoCard>
+          )}
 
-        {patientProfile?.conditions && patientProfile.conditions.length > 0 && (
-          <InfoCard title="Medical Conditions">
-            {patientProfile.conditions.map((condition, index) => (
-              <View key={index} style={styles.listItem}>
-                <ThemedText style={styles.conditionText}>
-                  • {condition}
-                </ThemedText>
-              </View>
-            ))}
-          </InfoCard>
-        )}
+        {patientProfile?.medicalInfo?.conditions &&
+          patientProfile.medicalInfo.conditions.length > 0 && (
+            <InfoCard title="Medical Conditions">
+              {patientProfile.medicalInfo.conditions.map((condition, index) => (
+                <View key={index} style={styles.listItem}>
+                  <ThemedText style={styles.conditionText}>
+                    • {condition}
+                  </ThemedText>
+                </View>
+              ))}
+            </InfoCard>
+          )}
 
         {patientProfile?.emergencyContact && (
           <InfoCard title="Emergency Contact">
@@ -118,7 +133,7 @@ export default function ProfileScreen() {
             <View style={styles.infoRow}>
               <ThemedText style={styles.label}>Phone:</ThemedText>
               <ThemedText style={styles.value}>
-                {patientProfile.emergencyContact.phone}
+                {patientProfile.emergencyContact.phoneNumber}
               </ThemedText>
             </View>
             <View style={styles.infoRow}>

@@ -1,0 +1,41 @@
+[
+  {
+    "id": "1",
+    "name": "Lisinopril",
+    "genericName": "Lisinopril",
+    "dosage": "10mg",
+    "frequency": "Once daily",
+    "prescriber": "Dr. Smith",
+    "pharmacy": "CVS Pharmacy",
+    "dateAdded": "2024-01-15",
+    "notes": "Take with food",
+    "confidence": 0.92,
+    "isActive": true
+  },
+  {
+    "id": "2",
+    "name": "Metformin",
+    "genericName": "Metformin hydrochloride",
+    "dosage": "500mg",
+    "frequency": "Twice daily",
+    "prescriber": "Dr. Johnson",
+    "pharmacy": "Walgreens",
+    "dateAdded": "2024-01-10",
+    "notes": "Take with meals",
+    "confidence": 0.88,
+    "isActive": true
+  },
+  {
+    "id": "3",
+    "name": "Atorvastatin",
+    "genericName": "Atorvastatin calcium",
+    "dosage": "20mg",
+    "frequency": "Once daily at bedtime",
+    "prescriber": "Dr. Smith",
+    "pharmacy": "CVS Pharmacy",
+    "dateAdded": "2024-01-05",
+    "notes": "Monitor cholesterol levels",
+    "confidence": 0.95,
+    "isActive": true
+  }
+]
