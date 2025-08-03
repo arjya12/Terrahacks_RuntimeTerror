@@ -1,0 +1,317 @@
+📱 LOGO SYSTEM USAGE EXAMPLES
+
+This file contains practical examples of how to use the logo components throughout your React Native app.
+
+═══════════════════════════════════════════════════════════════════════════════
+
+1. 🎯 BASIC LOGO USAGE
+
+// Simple logo with default settings
+import { Logo } from '@/components/Logo';
+
+<Logo size={48} />
+
+// Logo with animation
+<Logo size={64} animated />
+
+// Custom colors
+<Logo 
+  size={48} 
+  gradientColors={['#10B981', '#059669']} 
+  centerColor="#FFFFFF"
+/>
+
+═══════════════════════════════════════════════════════════════════════════════
+
+2. 🔧 PRE-CONFIGURED COMPONENTS
+
+import { 
+  AppLogo, 
+  IconLogo, 
+  SplashLogo, 
+  ButtonLogo, 
+  LoadingLogo 
+} from '@/components/Logo';
+
+// App branding
+<AppLogo size={48} />
+
+// Navigation icons
+<IconLogo size={32} />
+
+// Loading states
+<LoadingLogo size={40} />
+
+═══════════════════════════════════════════════════════════════════════════════
+
+3. 🚀 SPLASH SCREEN IMPLEMENTATION
+
+import { SplashScreen } from '@/components/ui/SplashScreen';
+
+function App() {
+  const [isLoading, setIsLoading] = useState(true);
+
+  if (isLoading) {
+    return (
+      <SplashScreen
+        onAnimationComplete={() => setIsLoading(false)}
+        appName="MediTrack"
+        tagline="Your Health, Simplified"
+      />
+    );
+  }
+
+  return <MainApp />;
+}
+
+═══════════════════════════════════════════════════════════════════════════════
+
+4. ⏳ LOADING STATES
+
+import { LoadingSpinner, LoadingOverlay, InlineLoader } from '@/components/ui/LoadingSpinner';
+
+// Full-screen loading
+<LoadingSpinner 
+  size={64} 
+  message="Loading your medications..." 
+/>
+
+// Overlay loading
+<LoadingOverlay 
+  visible={isLoading} 
+  message="Syncing data..." 
+/>
+
+// Inline loading
+<InlineLoader size={20} message="Saving..." />
+
+// Different variants
+<LoadingSpinner variant="success" message="Saved!" />
+<LoadingSpinner variant="error" message="Failed to load" />
+
+═══════════════════════════════════════════════════════════════════════════════
+
+5. 🔘 LOGO BUTTONS
+
+import { LogoButton, LogoIconButton } from '@/components/ui/LogoButton';
+
+// Primary action button
+<LogoButton
+  title="Get Started"
+  onPress={handleGetStarted}
+  variant="primary"
+  size="large"
+/>
+
+// Secondary button
+<LogoButton
+  title="Learn More"
+  onPress={handleLearnMore}
+  variant="outline"
+  logoPosition="right"
+/>
+
+// Icon-only button
+<LogoIconButton
+  onPress={handleQuickAction}
+  size={48}
+  variant="primary"
+/>
+
+// Loading button
+<LogoButton
+  title="Saving..."
+  onPress={handleSave}
+  loading={isSaving}
+  disabled={isSaving}
+/>
+
+═══════════════════════════════════════════════════════════════════════════════
+
+6. 📊 HEADER COMPONENTS
+
+import { 
+  BrandedHeader, 
+  NavigationHeader, 
+  InlineBrand 
+} from '@/components/ui/BrandedHeader';
+
+// Main app header
+<BrandedHeader
+  title="MediTrack"
+  subtitle="Your Health, Simplified"
+  variant="default"
+  theme="light"
+/>
+
+// Compact header
+<BrandedHeader
+  title="Medications"
+  variant="compact"
+  logoSize={24}
+/>
+
+// Navigation header
+<NavigationHeader
+  title="MediTrack"
+  onBackPress={() => navigation.goBack()}
+  rightElement={<NotificationIcon />}
+/>
+
+// Inline branding
+<InlineBrand size="medium" />
+
+═══════════════════════════════════════════════════════════════════════════════
+
+7. 📱 INTEGRATION WITH EXISTING COMPONENTS
+
+// In your DashboardHeader component
+import { InlineBrand } from '@/components/ui/BrandedHeader';
+
+export function DashboardHeader() {
+  return (
+    <View style={styles.header}>
+      <InlineBrand size="large" />
+      <Text style={styles.greeting}>Good morning, John!</Text>
+    </View>
+  );
+}
+
+// In your FloatingActionButton
+import { ButtonLogo } from '@/components/Logo';
+
+export function FloatingActionButton({ onPress }) {
+  return (
+    <TouchableOpacity style={styles.fab} onPress={onPress}>
+      <ButtonLogo size={24} />
+    </TouchableOpacity>
+  );
+}
+
+═══════════════════════════════════════════════════════════════════════════════
+
+8. 🎨 THEMING AND CUSTOMIZATION
+
+// Dark mode logo
+<Logo 
+  size={48}
+  gradientColors={['#6366F1', '#8B5CF6']}
+  centerColor="#1F2937"
+/>
+
+// Brand color variations
+const BRAND_VARIANTS = {
+  primary: ['#4F46E5', '#7C3AED'],
+  success: ['#10B981', '#059669'],
+  warning: ['#F59E0B', '#D97706'],
+  error: ['#EF4444', '#DC2626'],
+};
+
+<Logo 
+  size={48}
+  gradientColors={BRAND_VARIANTS.success}
+/>
+
+═══════════════════════════════════════════════════════════════════════════════
+
+9. 📏 RESPONSIVE SIZING
+
+import { Dimensions } from 'react-native';
+
+const { width } = Dimensions.get('window');
+const logoSize = width > 768 ? 64 : 48; // Tablet vs phone
+
+<SplashLogo size={logoSize} />
+
+// Using percentage-based sizing
+const responsiveSize = Math.min(width * 0.15, 80);
+<Logo size={responsiveSize} />
+
+═══════════════════════════════════════════════════════════════════════════════
+
+10. 🔄 ANIMATION EXAMPLES
+
+// Rotating loader
+<Logo 
+  size={48} 
+  animated 
+  animationDuration={1500} 
+/>
+
+// Pulse effect (custom implementation)
+const PulseLogo = () => {
+  const scale = useSharedValue(1);
+  
+  useEffect(() => {
+    scale.value = withRepeat(
+      withSequence(
+        withTiming(1.1, { duration: 800 }),
+        withTiming(1, { duration: 800 })
+      ),
+      -1
+    );
+  }, []);
+
+  const animatedStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: scale.value }],
+  }));
+
+  return (
+    <Animated.View style={animatedStyle}>
+      <Logo size={48} />
+    </Animated.View>
+  );
+};
+
+═══════════════════════════════════════════════════════════════════════════════
+
+11. 🎯 PERFORMANCE OPTIMIZATION
+
+// Memoized logo for lists
+const MemoizedLogo = React.memo(Logo);
+
+// In FlatList
+const renderItem = ({ item }) => (
+  <View>
+    <MemoizedLogo size={32} />
+    <Text>{item.title}</Text>
+  </View>
+);
+
+// Lazy loading for splash screen
+const SplashLogo = React.lazy(() => import('@/components/Logo').then(module => ({ default: module.SplashLogo })));
+
+═══════════════════════════════════════════════════════════════════════════════
+
+12. 📱 PLATFORM-SPECIFIC USAGE
+
+import { Platform } from 'react-native';
+
+// Platform-specific sizing
+const logoSize = Platform.select({
+  ios: 32,
+  android: 28,
+  web: 36,
+});
+
+<IconLogo size={logoSize} />
+
+// Platform-specific variants
+const logoVariant = Platform.select({
+  ios: 'icon',
+  android: 'button',
+  default: 'default',
+});
+
+<Logo variant={logoVariant} size={48} />
+
+═══════════════════════════════════════════════════════════════════════════════
+
+💡 TIPS:
+- Use AppLogo for main branding
+- Use IconLogo for navigation elements
+- Use LoadingLogo for loading states
+- Use ButtonLogo for interactive elements
+- Customize colors to match your app theme
+- Consider performance when using in lists
+- Test on different screen sizes and densities

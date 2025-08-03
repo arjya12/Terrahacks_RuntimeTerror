@@ -11,6 +11,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 /**
  * DashboardHeader - Enhanced header with dynamic greeting and smart notifications
@@ -24,6 +25,7 @@ import {
  */
 export function DashboardHeader() {
   const { user } = useUser();
+  const insets = useSafeAreaInsets();
   const [notifications, setNotifications] = useState<NotificationData[]>([]);
   const [currentTime, setCurrentTime] = useState(new Date());
   const fadeAnim = React.useRef(new Animated.Value(0)).current;
@@ -130,7 +132,16 @@ export function DashboardHeader() {
   };
 
   return (
-    <Animated.View style={[styles.container, { opacity: fadeAnim }]}>
+    <Animated.View
+      style={[
+        styles.container,
+        {
+          opacity: fadeAnim,
+          // Remove safe area padding since it's handled by ScrollView now
+          paddingTop: 20, // Just additional spacing
+        },
+      ]}
+    >
       {/* Main Header */}
       <View style={styles.headerMain}>
         <View style={styles.greetingSection}>
@@ -196,7 +207,6 @@ const styles = StyleSheet.create({
   container: {
     backgroundColor: "#ffffff",
     paddingHorizontal: 20,
-    paddingTop: 16,
     paddingBottom: 12,
     shadowColor: "#000",
     shadowOffset: {

@@ -1,7 +1,8 @@
+import { SplashScreen } from "@/components/ui/SplashScreen";
 import { clearAuthCache, debugAuthCache } from "@/utils/authUtils";
 import { useAuth, useUser } from "@clerk/clerk-expo";
 import { useRouter } from "expo-router";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import {
   ActivityIndicator,
   AppState,
@@ -21,6 +22,7 @@ export default function RootIndex() {
   const { isSignedIn, isLoaded, signOut } = useAuth();
   const { user } = useUser();
   const router = useRouter();
+  const [showSplash, setShowSplash] = useState(true);
 
   // Enhanced debugging
   console.log("📱 RootIndex render:", {
@@ -72,8 +74,9 @@ export default function RootIndex() {
       // With forced login policy, we always redirect to auth screens first
       // Users must authenticate fresh each time they open the app
       console.log("🔒 Forced login policy: Redirecting to authentication");
+      setShowSplash(false);
       router.replace("/(auth)/sign-in");
-    }, 500); // Slightly longer delay to allow session clearing to complete
+    }, 2500); // Allow splash screen animation to complete
 
     return () => clearTimeout(timeoutId);
   }, [isLoaded, router]); // Removed isSignedIn and user dependencies since we always go to auth
@@ -112,7 +115,21 @@ export default function RootIndex() {
     };
   }, [signOut]);
 
-  // Show loading while determining where to navigate
+  // Show splash screen while determining where to navigate
+  if (showSplash) {
+    return (
+      <SplashScreen
+        appName="MedReconcile Pro"
+        tagline="Your Health, Simplified"
+        onAnimationComplete={() => {
+          console.log("🎬 Splash animation completed");
+          // Animation complete will be handled by the timeout
+        }}
+      />
+    );
+  }
+
+  // Fallback loading screen (should rarely be seen)
   return (
     <View style={styles.container}>
       <ActivityIndicator size="large" color="#3b82f6" />

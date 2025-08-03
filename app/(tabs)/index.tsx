@@ -5,32 +5,31 @@ import {
   ActivityIndicator,
   Alert,
   Animated,
-  FlatList,
+  RefreshControl,
+  ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import {
+  SafeAreaView,
+  useSafeAreaInsets,
+} from "react-native-safe-area-context";
 
 import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
 import { EnhancedMedicationCard } from "@/components/dashboard/EnhancedMedicationCard";
 import { FloatingActionButton } from "@/components/dashboard/FloatingActionButton";
+import { MyMedicationsSection } from "@/components/dashboard/MyMedicationsSection";
 import { QuickActionsBar } from "@/components/dashboard/QuickActionsBar";
 import { StatsCards } from "@/components/dashboard/StatsCards";
-import { TodaysSchedule } from "@/components/dashboard/TodaysSchedule";
 import { AppIcon } from "@/components/icons/IconSystem";
 import { MedicationEntryFlow } from "@/components/medication-entry/MedicationEntryFlow";
 import OnboardingFlow from "@/components/OnboardingFlow";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import { mockDataService } from "@/mocks/mockService";
-import {
-  AdherenceData,
-  Medication,
-  MedicationFormData,
-  MedicationSchedule,
-} from "@/mocks/types";
+import { AdherenceData, Medication, MedicationFormData } from "@/mocks/types";
 
 interface MedicationCardProps {
   medication: Medication;
@@ -192,6 +191,7 @@ function MedicationCard({
  * - Streamlined interface focused on core tasks
  */
 export default function MedicationsScreen() {
+  const insets = useSafeAreaInsets();
   const [medications, setMedications] = useState<Medication[]>([]);
   const [adherenceData, setAdherenceData] = useState<AdherenceData[]>([]);
   const [showEditModal, setShowEditModal] = useState(false);
@@ -205,6 +205,7 @@ export default function MedicationsScreen() {
   const [searchQuery, setSearchQuery] = useState("");
   const [activeFilter, setActiveFilter] = useState("all");
   const [sortBy, setSortBy] = useState("name");
+  const [refreshing, setRefreshing] = useState(false);
 
   const pulseAnim = React.useRef(new Animated.Value(1)).current;
 
@@ -227,11 +228,15 @@ export default function MedicationsScreen() {
     }
   }, [medications.length, isLoading, pulseAnim]);
 
-  const loadMedications = useCallback(async () => {
-    setIsLoading(true);
+  const loadMedications = useCallback(async (isRefresh = false) => {
+    if (!isRefresh) {
+      setIsLoading(true);
+    }
     try {
       // Simulate API delay
-      await new Promise((resolve) => setTimeout(resolve, 800));
+      await new Promise((resolve) =>
+        setTimeout(resolve, isRefresh ? 400 : 800)
+      );
       const [allMedications, adherence] = await Promise.all([
         mockDataService.getMedicationsAsync(),
         mockDataService.getAdherenceData(),
@@ -242,13 +247,19 @@ export default function MedicationsScreen() {
       Alert.alert("Error", "Failed to load medications. Please try again.");
     } finally {
       setIsLoading(false);
+      setRefreshing(false);
     }
   }, []);
 
   // Load medications and check onboarding status on component mount
   React.useEffect(() => {
-    loadMedications();
+    loadMedications(false);
     checkOnboardingStatus();
+  }, [loadMedications]);
+
+  const handleRefresh = useCallback(() => {
+    setRefreshing(true);
+    loadMedications(true);
   }, [loadMedications]);
 
   const checkOnboardingStatus = async () => {
@@ -397,16 +408,6 @@ export default function MedicationsScreen() {
     }
   };
 
-  const handleMedicationPress = (medication: MedicationSchedule) => {
-    // Handle press on today's schedule medication
-    const fullMedication = medications.find(
-      (med) => med.id === medication.medicationId
-    );
-    if (fullMedication) {
-      handleEditMedication(fullMedication);
-    }
-  };
-
   const handleMedicationDetails = (medication: Medication) => {
     // Handle press on medication card for details view
     handleEditMedication(medication);
@@ -478,27 +479,91 @@ export default function MedicationsScreen() {
     (med) => !(med.isActive ?? true)
   );
 
-  const renderMedication = ({ item }: { item: Medication }) => {
-    const medicationAdherence = adherenceData.find(
-      (data) => data.medicationId === item.id
-    );
+  const renderMedicationList = () => {
+    if (filteredMedications.length === 0) {
+      return (
+        <ThemedView style={styles.emptyContainer}>
+          <AppIcon name="nav_medications" size="large" color="disabled" />
+          <ThemedText style={styles.emptyTitle}>
+            {searchQuery || activeFilter !== "all"
+              ? "No matches found"
+              : "No Medications"}
+          </ThemedText>
+          <ThemedText style={styles.emptyText}>
+            {searchQuery || activeFilter !== "all"
+              ? "Try adjusting your search or filter criteria"
+              : "Start building your medication list to keep track of your prescriptions"}
+          </ThemedText>
+          {!searchQuery && activeFilter === "all" && (
+            <View style={styles.emptyActions}>
+              <TouchableOpacity
+                style={styles.emptyActionButton}
+                onPress={handleAddMedication}
+              >
+                <AppIcon
+                  name="action_add_medication"
+                  size="small"
+                  color="white"
+                />
+                <Text style={styles.emptyActionText}>Add Manually</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[
+                  styles.emptyActionButton,
+                  styles.emptyActionButtonSecondary,
+                ]}
+                onPress={() => router.push("/(tabs)/explore")}
+              >
+                <AppIcon
+                  name="action_scan_bottle"
+                  size="small"
+                  color="active"
+                />
+                <Text
+                  style={[
+                    styles.emptyActionText,
+                    styles.emptyActionTextSecondary,
+                  ]}
+                >
+                  Scan Bottle
+                </Text>
+              </TouchableOpacity>
+            </View>
+          )}
+        </ThemedView>
+      );
+    }
 
     return (
-      <EnhancedMedicationCard
-        medication={item}
-        adherenceData={medicationAdherence}
-        onEdit={handleEditMedication}
-        onDelete={handleDeleteMedication}
-        onMarkTaken={handleMedicationTaken}
-        onViewDetails={handleMedicationDetails}
-        isDeleting={isDeleting === item.id}
-      />
+      <View style={styles.medicationListContainer}>
+        {filteredMedications.map((medication) => {
+          const medicationAdherence = adherenceData.find(
+            (data) => data.medicationId === medication.id
+          );
+
+          return (
+            <EnhancedMedicationCard
+              key={medication.id}
+              medication={medication}
+              adherenceData={medicationAdherence}
+              onEdit={handleEditMedication}
+              onDelete={handleDeleteMedication}
+              onMarkTaken={handleMedicationTaken}
+              onViewDetails={handleMedicationDetails}
+              isDeleting={isDeleting === medication.id}
+            />
+          );
+        })}
+      </View>
     );
   };
 
   if (isLoading) {
     return (
-      <SafeAreaView style={styles.container}>
+      <SafeAreaView
+        style={styles.container}
+        edges={["left", "right", "bottom"]}
+      >
         <ThemedView style={styles.loadingContainer}>
           <ActivityIndicator size="large" color="#3b82f6" />
           <ThemedText style={styles.loadingText}>
@@ -511,88 +576,64 @@ export default function MedicationsScreen() {
 
   return (
     <View style={styles.container}>
-      {/* Enhanced Dashboard Header */}
-      <DashboardHeader />
-
-      {/* Actionable Stats Cards */}
-      <StatsCards onCardPress={handleStatsCardPress} />
-
-      {/* Quick Actions Bar */}
-      <QuickActionsBar
-        onSearch={handleSearch}
-        onFilter={handleFilter}
-        onSort={handleSort}
-        onClear={handleClear}
-        onCalendarPress={() => {
-          /* TODO: Implement calendar view */
-        }}
-        searchQuery={searchQuery}
-        activeFilter={activeFilter}
-        sortBy={sortBy}
-      />
-
-      {/* Today's Schedule Timeline */}
-      <TodaysSchedule onMedicationPress={handleMedicationPress} />
-
-      {/* Medication List */}
-      <FlatList
-        data={filteredMedications}
-        renderItem={renderMedication}
-        keyExtractor={(item) => item.id}
-        contentContainerStyle={styles.listContainer}
+      {/* Unified Scroll Container for Entire Page */}
+      <ScrollView
+        style={styles.scrollContainer}
+        contentContainerStyle={[
+          styles.scrollContentContainer,
+          { paddingTop: insets.top, paddingBottom: insets.bottom + 80 }, // Extra padding for FAB
+        ]}
         showsVerticalScrollIndicator={false}
-        ListEmptyComponent={
-          <ThemedView style={styles.emptyContainer}>
-            <AppIcon name="nav_medications" size="large" color="disabled" />
-            <ThemedText style={styles.emptyTitle}>
-              {searchQuery || activeFilter !== "all"
-                ? "No matches found"
-                : "No Medications"}
-            </ThemedText>
-            <ThemedText style={styles.emptyText}>
-              {searchQuery || activeFilter !== "all"
-                ? "Try adjusting your search or filter criteria"
-                : "Start building your medication list to keep track of your prescriptions"}
-            </ThemedText>
-            {!searchQuery && activeFilter === "all" && (
-              <View style={styles.emptyActions}>
-                <TouchableOpacity
-                  style={styles.emptyActionButton}
-                  onPress={handleAddMedication}
-                >
-                  <AppIcon
-                    name="action_add_medication"
-                    size="small"
-                    color="white"
-                  />
-                  <Text style={styles.emptyActionText}>Add Manually</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={[
-                    styles.emptyActionButton,
-                    styles.emptyActionButtonSecondary,
-                  ]}
-                  onPress={() => router.push("/(tabs)/explore")}
-                >
-                  <AppIcon
-                    name="action_scan_bottle"
-                    size="small"
-                    color="active"
-                  />
-                  <Text
-                    style={[
-                      styles.emptyActionText,
-                      styles.emptyActionTextSecondary,
-                    ]}
-                  >
-                    Scan Bottle
-                  </Text>
-                </TouchableOpacity>
-              </View>
-            )}
-          </ThemedView>
+        bounces={true}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={handleRefresh}
+            tintColor="#3b82f6"
+            colors={["#3b82f6"]}
+            progressBackgroundColor="#ffffff"
+          />
         }
-      />
+        scrollEventThrottle={16}
+        decelerationRate="normal"
+      >
+        {/* Enhanced Dashboard Header */}
+        <DashboardHeader />
+
+        {/* Actionable Stats Cards */}
+        <StatsCards onCardPress={handleStatsCardPress} />
+
+        {/* Quick Actions Bar */}
+        <QuickActionsBar
+          onSearch={handleSearch}
+          onFilter={handleFilter}
+          onSort={handleSort}
+          onClear={handleClear}
+          onCalendarPress={() => {
+            /* TODO: Implement calendar view */
+          }}
+          searchQuery={searchQuery}
+          activeFilter={activeFilter}
+          sortBy={sortBy}
+        />
+
+        {/* My Medications Section with Enhanced Cards */}
+        <MyMedicationsSection
+          medications={medications}
+          adherenceData={adherenceData}
+          onEdit={handleEditMedication}
+          onDelete={handleDeleteMedication}
+          onMarkTaken={handleMedicationTaken}
+          onViewDetails={handleMedicationDetails}
+          isDeleting={isDeleting}
+        />
+
+        {/* All Medications List */}
+        <View style={styles.allMedicationsSection}>
+          <Text style={styles.allMedicationsTitle}>All Medications</Text>
+          {renderMedicationList()}
+        </View>
+      </ScrollView>
 
       {/* Floating Action Button */}
       <FloatingActionButton
@@ -623,6 +664,26 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#f3f4f6",
   },
+  scrollContainer: {
+    flex: 1,
+  },
+  scrollContentContainer: {
+    flexGrow: 1,
+    backgroundColor: "#f3f4f6",
+  },
+  allMedicationsSection: {
+    paddingHorizontal: 20,
+    paddingTop: 16,
+  },
+  allMedicationsTitle: {
+    fontSize: 20,
+    fontWeight: "700",
+    color: "#1e293b",
+    marginBottom: 16,
+  },
+  medicationListContainer: {
+    paddingTop: 8,
+  },
   header: {
     padding: 20,
     backgroundColor: "transparent",
@@ -650,7 +711,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   listContainer: {
-    padding: 16,
     paddingTop: 0,
   },
   medicationCard: {
