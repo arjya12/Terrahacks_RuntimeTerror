@@ -1,85 +1,105 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import {
   ActivityIndicator,
   FlatList,
   StyleSheet,
   Text,
+  TouchableOpacity,
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
+import { ProtectedRoute } from "@/components/auth/SupabaseAuthSync";
 import { AppIcon } from "@/components/icons/IconSystem";
-import { mockDataService } from "@/mocks/mockService";
-import { Medication } from "@/mocks/types";
+import { AddMedicationModal } from "@/components/medication/AddMedicationModal";
+import { ImprovedTakeMedicationCard } from "@/components/medication/ImprovedTakeMedicationCard";
+import { Database } from "@/config/supabase";
+import { useDeleteMedication, useMedications } from "@/hooks/useSupabase";
+
+type Medication = Database["public"]["Tables"]["medications"]["Row"];
 
 interface MedicationCardProps {
   medication: Medication;
+  onDelete?: (id: string) => void;
 }
 
 /**
  * MedicationCard - Displays individual medication information in a card format
  *
  * @param medication - The medication object containing name, dosage, prescriber, etc.
+ * @param onDelete - Optional callback for deleting the medication
  *
  * Features:
- * - Confidence indicator with color-coded badges (green >90%, yellow >80%, red <80%)
  * - Active/inactive status badge
- * - Displays all medication details including generic name, dosage, prescriber, pharmacy
- * - Optional notes section
+ * - Displays all medication details including dosage, prescriber, pharmacy
+ * - Optional instructions section
+ * - Delete functionality with confirmation
  * - Responsive card design with shadow effects
  */
-function MedicationCard({ medication }: MedicationCardProps) {
-  const confidence = medication.confidence ?? 1.0;
-  const confidenceColor =
-    confidence > 0.9 ? "#10b981" : confidence > 0.8 ? "#f59e0b" : "#ef4444";
+function MedicationCard({ medication, onDelete }: MedicationCardProps) {
+  const handleDelete = () => {
+    if (onDelete) {
+      onDelete(medication.id);
+    }
+  };
 
   return (
     <ThemedView style={styles.medicationCard}>
       <View style={styles.cardHeader}>
         <ThemedText style={styles.medicationName}>{medication.name}</ThemedText>
-        <View
-          style={[styles.confidenceBadge, { backgroundColor: confidenceColor }]}
-        >
-          <Text style={styles.confidenceText}>
-            {Math.round(confidence * 100)}%
-          </Text>
-        </View>
+        {onDelete && (
+          <TouchableOpacity onPress={handleDelete} style={styles.deleteButton}>
+            <AppIcon name="action_delete" size="small" color="error" />
+          </TouchableOpacity>
+        )}
       </View>
-
-      {medication.genericName && (
-        <ThemedText style={styles.genericName}>
-          Generic: {medication.genericName}
-        </ThemedText>
-      )}
 
       <ThemedText style={styles.dosageText}>
         {medication.dosage} - {medication.frequency}
       </ThemedText>
-      <ThemedText style={styles.prescriberText}>
-        Prescribed by: {medication.prescriber}
-      </ThemedText>
-      <ThemedText style={styles.pharmacyText}>
-        Pharmacy: {medication.pharmacy}
-      </ThemedText>
 
-      {medication.notes && (
-        <ThemedText style={styles.notesText}>{medication.notes}</ThemedText>
+      {medication.prescriber && (
+        <ThemedText style={styles.prescriberText}>
+          Prescribed by: {medication.prescriber}
+        </ThemedText>
       )}
+
+      {medication.pharmacy && (
+        <ThemedText style={styles.pharmacyText}>
+          Pharmacy: {medication.pharmacy}
+        </ThemedText>
+      )}
+
+      {medication.instructions && (
+        <ThemedText style={styles.notesText}>
+          {medication.instructions}
+        </ThemedText>
+      )}
+
+      <View style={styles.medicationDetails}>
+        <ThemedText style={styles.dateText}>
+          Started: {new Date(medication.start_date).toLocaleDateString()}
+        </ThemedText>
+        {medication.end_date && (
+          <ThemedText style={styles.dateText}>
+            Ends: {new Date(medication.end_date).toLocaleDateString()}
+          </ThemedText>
+        )}
+      </View>
 
       <View style={styles.statusContainer}>
         <View
           style={[
             styles.statusBadge,
             {
-              backgroundColor:
-                medication.isActive ?? true ? "#10b981" : "#6b7280",
+              backgroundColor: medication.active ? "#10b981" : "#6b7280",
             },
           ]}
         >
           <Text style={styles.statusText}>
-            {medication.isActive ?? true ? "Active" : "Inactive"}
+            {medication.active ? "Active" : "Inactive"}
           </Text>
         </View>
       </View>
@@ -91,38 +111,62 @@ function MedicationCard({ medication }: MedicationCardProps) {
  * MedicationsScreen - Displays the user's medication list with loading and empty states
  *
  * Features:
+ * - Real-time data from Supabase
  * - Loading spinner while fetching medications
  * - Empty state when no medications exist
  * - Active medication filtering and count display
- * - Responsive medication cards with confidence indicators
+ * - Delete medication functionality
+ * - Protected authentication route
  */
-export default function MedicationsScreen() {
-  const [medications, setMedications] = useState<Medication[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+function MedicationsScreenContent() {
+  const [showAddModal, setShowAddModal] = React.useState(false);
+  const {
+    data: medicationsResult,
+    isLoading,
+    error,
+    refetch,
+  } = useMedications();
+  const deleteMedication = useDeleteMedication();
 
-  const activeMedications = medications.filter((med) => med.isActive ?? true);
+  const medications = medicationsResult?.data || [];
+  const activeMedications = medications.filter((med) => med.active);
 
-  useEffect(() => {
-    loadMedications();
-  }, []);
-
-  const loadMedications = async () => {
+  const handleDeleteMedication = async (medicationId: string) => {
     try {
-      setIsLoading(true);
-      setError(null);
-      const data = await mockDataService.getMedicationsAsync();
-      setMedications(data);
+      await deleteMedication.mutateAsync(medicationId);
     } catch (error) {
-      console.error("Failed to load medications:", error);
-      setError("Failed to load medications. Please try again.");
-    } finally {
-      setIsLoading(false);
+      console.error("Failed to delete medication:", error);
     }
   };
 
   const renderMedication = ({ item }: { item: Medication }) => (
-    <MedicationCard medication={item} />
+    <ImprovedTakeMedicationCard
+      medication={{
+        id: item.id,
+        name: item.name,
+        dosage: item.dosage || "",
+        frequency: item.frequency || "",
+        instructions: item.instructions || undefined,
+        prescriber: item.prescriber || undefined,
+        pharmacy: item.pharmacy || undefined,
+        active: item.active || false,
+        start_date: item.start_date || "",
+        end_date: item.end_date || undefined,
+      }}
+      onDelete={handleDeleteMedication}
+      onMarkTaken={(medicationId) => {
+        // Handle mark taken logic here
+        console.log("Marking medication taken:", medicationId);
+      }}
+      onSkip={(medicationId) => {
+        // Handle skip logic here
+        console.log("Skipping medication:", medicationId);
+      }}
+      onViewDetails={(medication) => {
+        // Handle view details logic here
+        console.log("Viewing details for:", medication.name);
+      }}
+    />
   );
 
   const renderEmptyState = () => (
@@ -147,7 +191,12 @@ export default function MedicationsScreen() {
     <ThemedView style={styles.errorContainer}>
       <AppIcon name="feedback_error" size="large" color="error" />
       <ThemedText style={styles.errorTitle}>Unable to Load</ThemedText>
-      <ThemedText style={styles.errorText}>{error}</ThemedText>
+      <ThemedText style={styles.errorText}>
+        {error?.message || "Failed to load medications. Please try again."}
+      </ThemedText>
+      <TouchableOpacity onPress={() => refetch()} style={styles.retryButton}>
+        <ThemedText style={styles.retryButtonText}>Retry</ThemedText>
+      </TouchableOpacity>
     </ThemedView>
   );
 
@@ -155,7 +204,7 @@ export default function MedicationsScreen() {
     return (
       <SafeAreaView style={styles.container}>
         <ThemedView style={styles.header}>
-          <ThemedText style={styles.headerTitle}>My Medications</ThemedText>
+          <ThemedText style={styles.headerTitle}>Take Medications</ThemedText>
         </ThemedView>
         {renderLoadingState()}
       </SafeAreaView>
@@ -166,7 +215,7 @@ export default function MedicationsScreen() {
     return (
       <SafeAreaView style={styles.container}>
         <ThemedView style={styles.header}>
-          <ThemedText style={styles.headerTitle}>My Medications</ThemedText>
+          <ThemedText style={styles.headerTitle}>Take Medications</ThemedText>
         </ThemedView>
         {renderErrorState()}
       </SafeAreaView>
@@ -176,9 +225,9 @@ export default function MedicationsScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <ThemedView style={styles.header}>
-        <ThemedText style={styles.headerTitle}>My Medications</ThemedText>
+        <ThemedText style={styles.headerTitle}>Take Medications</ThemedText>
         <ThemedText style={styles.headerSubtitle}>
-          {activeMedications.length} active medication
+          Manage your daily doses • {activeMedications.length} active medication
           {activeMedications.length !== 1 ? "s" : ""}
         </ThemedText>
       </ThemedView>
@@ -194,7 +243,29 @@ export default function MedicationsScreen() {
         showsVerticalScrollIndicator={false}
         ListEmptyComponent={renderEmptyState}
       />
+
+      {/* Floating Action Button */}
+      <TouchableOpacity
+        style={styles.fab}
+        onPress={() => setShowAddModal(true)}
+      >
+        <AppIcon name="action_add_medication" size="medium" color="white" />
+      </TouchableOpacity>
+
+      {/* Add Medication Modal */}
+      <AddMedicationModal
+        visible={showAddModal}
+        onClose={() => setShowAddModal(false)}
+      />
     </SafeAreaView>
+  );
+}
+
+export default function MedicationsScreen() {
+  return (
+    <ProtectedRoute>
+      <MedicationsScreenContent />
+    </ProtectedRoute>
   );
 }
 
@@ -289,6 +360,46 @@ const styles = StyleSheet.create({
     color: "white",
     fontSize: 12,
     fontWeight: "600",
+  },
+  deleteButton: {
+    padding: 8,
+    borderRadius: 8,
+    backgroundColor: "rgba(239, 68, 68, 0.1)",
+  },
+  medicationDetails: {
+    marginVertical: 8,
+    gap: 4,
+  },
+  dateText: {
+    fontSize: 12,
+    opacity: 0.7,
+  },
+  retryButton: {
+    marginTop: 16,
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    backgroundColor: "#3b82f6",
+    borderRadius: 8,
+  },
+  retryButtonText: {
+    color: "white",
+    fontWeight: "600",
+  },
+  fab: {
+    position: "absolute",
+    bottom: 30,
+    right: 20,
+    width: 56,
+    height: 56,
+    backgroundColor: "#3b82f6",
+    borderRadius: 28,
+    justifyContent: "center",
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 6,
+    elevation: 8,
   },
   emptyContainer: {
     alignItems: "center",

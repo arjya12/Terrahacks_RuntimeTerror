@@ -1,19 +1,11 @@
 import React, { useState } from "react";
-import {
-  Dimensions,
-  Modal,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import { Modal, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+import { AppIcon } from "@/components/icons/IconSystem";
+import { SplashLogo } from "@/components/Logo";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
-import { AppIcon } from "@/components/icons/IconSystem";
-
-const { width, height } = Dimensions.get("window");
 
 interface OnboardingStep {
   title: string;
@@ -24,9 +16,9 @@ interface OnboardingStep {
 
 const onboardingSteps: OnboardingStep[] = [
   {
-    title: "Welcome to MedReconcile Pro",
+    title: "Welcome to Eir",
     description:
-      "Manage your medications with confidence tracking, secure sharing, and smart scanning features.",
+      "Your intelligent health companion for medication management with confidence tracking, secure sharing, and smart scanning features.",
     icon: "pills.fill",
     color: "#3b82f6",
   },
@@ -34,21 +26,21 @@ const onboardingSteps: OnboardingStep[] = [
     title: "Smart Medication Management",
     description:
       "View your medications with confidence scores, add new ones manually, and track active vs inactive prescriptions.",
-    icon: "list.bullet.rectangle",
+    icon: "nav_medications",
     color: "#10b981",
   },
   {
     title: "Camera Scanning",
     description:
       "Scan pill bottles with your camera to automatically extract medication information using OCR technology.",
-    icon: "camera.fill",
+    icon: "nav_scan",
     color: "#f59e0b",
   },
   {
     title: "Secure Sharing",
     description:
       "Generate QR codes to securely share your medication list with healthcare providers when needed.",
-    icon: "qrcode",
+    icon: "share_list",
     color: "#8b5cf6",
   },
 ];
@@ -124,7 +116,7 @@ export default function OnboardingFlow({
                 { backgroundColor: `${currentStepData.color}20` },
               ]}
             >
-              <AppIcon name="nav_medications" size="large" color="active" />
+              <SplashLogo size={80} />
             </View>
           </View>
 

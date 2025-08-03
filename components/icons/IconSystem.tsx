@@ -47,6 +47,8 @@ export type IconName =
   | "nav_medications"
   | "nav_schedule"
   | "nav_scan"
+  | "nav_alerts"
+  | "nav_ai_assistant"
   | "nav_profile"
   | "action_add_medication"
   | "action_quick_add"
@@ -167,7 +169,9 @@ const ICON_MAP: Record<IconName, string> = {
   // Navigation & Primary Actions
   nav_medications: "medication",
   nav_schedule: "schedule",
-  nav_scan: "camera-alt",
+  nav_scan: "qr-code-scanner",
+  nav_alerts: "notifications",
+  nav_ai_assistant: "smart-toy",
   nav_profile: "person",
   action_add_medication: "add-circle",
   action_quick_add: "add",
@@ -309,6 +313,8 @@ const ACCESSIBILITY_LABELS: Record<IconName, string> = {
   nav_medications: "Medications list",
   nav_schedule: "Medication schedule",
   nav_scan: "Scan medication bottle",
+  nav_alerts: "Alerts and notifications",
+  nav_ai_assistant: "AI Assistant chat",
   nav_profile: "User profile",
   action_add_medication: "Add new medication",
   action_quick_add: "Quick add medication",
@@ -424,12 +430,10 @@ export function AppIcon({
   name,
   size = "medium",
   color = "default",
-  accessibilityLabel,
 }: IconSystemProps) {
   const iconName = ICON_MAP[name];
   const iconSize = SIZE_MAP[size];
   const iconColor = COLOR_MAP[color];
-  const defaultLabel = ACCESSIBILITY_LABELS[name];
 
   if (!iconName) {
     console.warn(`Icon "${name}" not found in icon system`);
@@ -437,7 +441,11 @@ export function AppIcon({
   }
 
   return (
-    <MaterialIcons name={iconName as any} size={iconSize} color={iconColor} />
+    <MaterialIcons
+      name={iconName as keyof typeof MaterialIcons.glyphMap}
+      size={iconSize}
+      color={iconColor}
+    />
   );
 }
 
@@ -537,7 +545,7 @@ export function SortIcon({
 export {
   ACCESSIBILITY_LABELS,
   COLOR_MAP,
-  AppIcon as default,
   ICON_MAP,
   SIZE_MAP,
+  AppIcon as default,
 };

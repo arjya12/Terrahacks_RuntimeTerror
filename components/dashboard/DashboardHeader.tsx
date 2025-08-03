@@ -11,7 +11,6 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 /**
  * DashboardHeader - Enhanced header with dynamic greeting and smart notifications
@@ -25,7 +24,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
  */
 export function DashboardHeader() {
   const { user } = useUser();
-  const insets = useSafeAreaInsets();
+
   const [notifications, setNotifications] = useState<NotificationData[]>([]);
   const [currentTime, setCurrentTime] = useState(new Date());
   const fadeAnim = React.useRef(new Animated.Value(0)).current;

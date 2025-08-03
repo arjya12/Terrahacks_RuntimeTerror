@@ -119,8 +119,8 @@ export default function RootIndex() {
   if (showSplash) {
     return (
       <SplashScreen
-        appName="MedReconcile Pro"
-        tagline="Your Health, Simplified"
+        appName="Eir"
+        tagline="Intelligent Health Companion"
         onAnimationComplete={() => {
           console.log("🎬 Splash animation completed");
           // Animation complete will be handled by the timeout

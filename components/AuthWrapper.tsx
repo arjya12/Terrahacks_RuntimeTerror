@@ -1,5 +1,5 @@
 import { useAuth, useUser } from "@clerk/clerk-expo";
-import React, { useState } from "react";
+import React from "react";
 import { ActivityIndicator, StyleSheet, Text, View } from "react-native";
 
 interface AuthWrapperProps {
@@ -16,7 +16,6 @@ interface AuthWrapperProps {
 export default function AuthWrapper({ children }: AuthWrapperProps) {
   const { isSignedIn, isLoaded } = useAuth();
   const { user } = useUser();
-  const [authError, setAuthError] = useState<string | null>(null);
 
   // Debug logging to track auth state changes
   console.log("🔄 AuthWrapper render:", {
@@ -32,17 +31,6 @@ export default function AuthWrapper({ children }: AuthWrapperProps) {
       <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color="#3b82f6" />
         <Text style={styles.loadingText}>Checking authentication...</Text>
-      </View>
-    );
-  }
-
-  // Auth error occurred
-  if (authError) {
-    console.log("❌ Auth error:", authError);
-    return (
-      <View style={styles.errorContainer}>
-        <Text style={styles.errorTitle}>Authentication Error</Text>
-        <Text style={styles.errorText}>{authError}</Text>
       </View>
     );
   }

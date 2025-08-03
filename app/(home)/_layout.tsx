@@ -16,7 +16,7 @@ export default function HomeLayout() {
       <Stack.Screen
         name="medications"
         options={{
-          title: "My Medications",
+          title: "Take Medications",
           headerShown: true,
           headerStyle: {
             backgroundColor: "#3b82f6",

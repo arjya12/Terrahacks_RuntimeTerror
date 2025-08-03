@@ -45,8 +45,6 @@ interface ActionableMedicationCardProps {
 function ActionableMedicationCard({
   medication,
   adherenceData,
-  onEdit,
-  onDelete,
   onMarkTaken,
   onViewDetails,
   isDeleting,
@@ -129,21 +127,6 @@ function ActionableMedicationCard({
     } finally {
       setIsSkipping(false);
     }
-  };
-
-  const handleDelete = () => {
-    Alert.alert(
-      "Delete Medication",
-      `Are you sure you want to delete ${medication.name}?`,
-      [
-        { text: "Cancel", style: "cancel" },
-        {
-          text: "Delete",
-          style: "destructive",
-          onPress: () => onDelete(medication.id),
-        },
-      ]
-    );
   };
 
   // Get medication status

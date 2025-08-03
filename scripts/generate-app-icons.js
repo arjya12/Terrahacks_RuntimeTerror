@@ -13,7 +13,9 @@
  * Usage: node scripts/generate-app-icons.js
  */
 
+// eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-unused-vars
 const fs = require("fs");
+// eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-unused-vars
 const path = require("path");
 
 // Icon sizes for different platforms

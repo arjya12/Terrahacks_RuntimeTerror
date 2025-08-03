@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "MedReconcile Pro",
-    "slug": "medreconcile-pro",
+    "name": "Eir",
+    "slug": "eir",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
@@ -15,14 +15,14 @@
 
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.anonymous.medreconcilepro"
+      "bundleIdentifier": "com.anonymous.eir"
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.anonymous.medreconcilepro",
+      "package": "com.anonymous.eir",
       "permissions": ["android.permission.CAMERA"]
     },
     "web": {
@@ -42,6 +42,11 @@
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "geminiApiKey": "AIzaSyDsSCLuqlFsAYAvZpDJaSv5_-FdT_oBDcw",
+      "supabaseUrl": "https://ufmfegcyxqadivgebpch.supabase.co/",
+      "supabaseAnonKey": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVmbWZlZ2N5eHFhZGl2Z2VicGNoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQyMTA1ODIsImV4cCI6MjA2OTc4NjU4Mn0.nv0zWoWx50OP7v86r_0fLrNvZ2X_YyaqbnHbKyorPdI"
     }
   }
 }

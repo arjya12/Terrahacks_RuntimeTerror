@@ -10,7 +10,7 @@ const SignOutButton = () => {
     try {
       await signOut();
       router.replace("/(auth)/sign-in");
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error(JSON.stringify(err, null, 2));
       Alert.alert("Error", "Failed to sign out. Please try again.");
     }

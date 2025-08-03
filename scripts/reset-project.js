@@ -6,8 +6,11 @@
  * You can remove the `reset-project` script from package.json and safely delete this file after running it.
  */
 
+// eslint-disable-next-line @typescript-eslint/no-require-imports
 const fs = require("fs");
+// eslint-disable-next-line @typescript-eslint/no-require-imports
 const path = require("path");
+// eslint-disable-next-line @typescript-eslint/no-require-imports
 const readline = require("readline");
 
 const root = process.cwd();

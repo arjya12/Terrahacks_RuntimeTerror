@@ -9,7 +9,13 @@ import Animated, {
   withRepeat,
   withTiming,
 } from "react-native-reanimated";
-import Svg, { Circle, Defs, LinearGradient, Stop } from "react-native-svg";
+import Svg, {
+  Circle,
+  Defs,
+  LinearGradient,
+  Path,
+  Stop,
+} from "react-native-svg";
 
 export interface LogoProps {
   /**
@@ -170,12 +176,56 @@ export const Logo: React.FC<LogoProps> = ({
           strokeWidth={logoConfig.strokeWidth}
         />
 
-        {/* Inner white circle */}
+        {/* Inner white circle background */}
         <Circle
           cx={logoConfig.radius}
           cy={logoConfig.radius}
           r={logoConfig.centerRadius}
           fill={centerColor}
+        />
+
+        {/* Heart shape in center */}
+        <Path
+          d={`M${logoConfig.radius},${
+            logoConfig.radius + logoConfig.centerRadius * 0.15
+          }
+             C${logoConfig.radius - logoConfig.centerRadius * 0.25},${
+            logoConfig.radius - logoConfig.centerRadius * 0.1
+          }
+             ${logoConfig.radius - logoConfig.centerRadius * 0.5},${
+            logoConfig.radius - logoConfig.centerRadius * 0.1
+          }
+             ${logoConfig.radius - logoConfig.centerRadius * 0.5},${
+            logoConfig.radius + logoConfig.centerRadius * 0.15
+          }
+             C${logoConfig.radius - logoConfig.centerRadius * 0.5},${
+            logoConfig.radius + logoConfig.centerRadius * 0.4
+          }
+             ${logoConfig.radius},${
+            logoConfig.radius + logoConfig.centerRadius * 0.6
+          }
+             ${logoConfig.radius},${
+            logoConfig.radius + logoConfig.centerRadius * 0.6
+          }
+             C${logoConfig.radius},${
+            logoConfig.radius + logoConfig.centerRadius * 0.6
+          }
+             ${logoConfig.radius + logoConfig.centerRadius * 0.5},${
+            logoConfig.radius + logoConfig.centerRadius * 0.4
+          }
+             ${logoConfig.radius + logoConfig.centerRadius * 0.5},${
+            logoConfig.radius + logoConfig.centerRadius * 0.15
+          }
+             C${logoConfig.radius + logoConfig.centerRadius * 0.5},${
+            logoConfig.radius - logoConfig.centerRadius * 0.1
+          }
+             ${logoConfig.radius + logoConfig.centerRadius * 0.25},${
+            logoConfig.radius - logoConfig.centerRadius * 0.1
+          }
+             ${logoConfig.radius},${
+            logoConfig.radius + logoConfig.centerRadius * 0.15
+          } Z`}
+          fill="#EF4444"
         />
       </Svg>
     </Animated.View>
@@ -265,7 +315,60 @@ export const LogoWithGradientView: React.FC<LogoProps> = ({
           alignItems: "center",
         }}
       >
-        <Animated.View style={centerStyle} />
+        <Animated.View style={centerStyle}>
+          <Svg
+            width={logoConfig.centerRadius * 2}
+            height={logoConfig.centerRadius * 2}
+            viewBox={`0 0 ${logoConfig.centerRadius * 2} ${
+              logoConfig.centerRadius * 2
+            }`}
+            style={{ position: "absolute" }}
+          >
+            {/* Heart shape */}
+            <Path
+              d={`M${logoConfig.centerRadius},${
+                logoConfig.centerRadius + logoConfig.centerRadius * 0.15
+              }
+                 C${logoConfig.centerRadius - logoConfig.centerRadius * 0.25},${
+                logoConfig.centerRadius - logoConfig.centerRadius * 0.1
+              }
+                 ${logoConfig.centerRadius - logoConfig.centerRadius * 0.5},${
+                logoConfig.centerRadius - logoConfig.centerRadius * 0.1
+              }
+                 ${logoConfig.centerRadius - logoConfig.centerRadius * 0.5},${
+                logoConfig.centerRadius + logoConfig.centerRadius * 0.15
+              }
+                 C${logoConfig.centerRadius - logoConfig.centerRadius * 0.5},${
+                logoConfig.centerRadius + logoConfig.centerRadius * 0.4
+              }
+                 ${logoConfig.centerRadius},${
+                logoConfig.centerRadius + logoConfig.centerRadius * 0.6
+              }
+                 ${logoConfig.centerRadius},${
+                logoConfig.centerRadius + logoConfig.centerRadius * 0.6
+              }
+                 C${logoConfig.centerRadius},${
+                logoConfig.centerRadius + logoConfig.centerRadius * 0.6
+              }
+                 ${logoConfig.centerRadius + logoConfig.centerRadius * 0.5},${
+                logoConfig.centerRadius + logoConfig.centerRadius * 0.4
+              }
+                 ${logoConfig.centerRadius + logoConfig.centerRadius * 0.5},${
+                logoConfig.centerRadius + logoConfig.centerRadius * 0.15
+              }
+                 C${logoConfig.centerRadius + logoConfig.centerRadius * 0.5},${
+                logoConfig.centerRadius - logoConfig.centerRadius * 0.1
+              }
+                 ${logoConfig.centerRadius + logoConfig.centerRadius * 0.25},${
+                logoConfig.centerRadius - logoConfig.centerRadius * 0.1
+              }
+                 ${logoConfig.centerRadius},${
+                logoConfig.centerRadius + logoConfig.centerRadius * 0.15
+              } Z`}
+              fill="#EF4444"
+            />
+          </Svg>
+        </Animated.View>
       </ExpoLinearGradient>
     </Animated.View>
   );

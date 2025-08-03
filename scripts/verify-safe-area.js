@@ -7,8 +7,8 @@
  * across the application components.
  */
 
+// eslint-disable-next-line @typescript-eslint/no-require-imports
 const fs = require("fs");
-const path = require("path");
 
 const COLORS = {
   reset: "\x1b[0m",
@@ -41,6 +41,7 @@ function checkFile(filePath, expectedContent, description) {
       );
       return false;
     }
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
   } catch (error) {
     log(`❌ ${description} - File not found: ${filePath}`, "red");
     return false;

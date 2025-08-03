@@ -20,160 +20,43 @@ import {
 import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
 import { EnhancedMedicationCard } from "@/components/dashboard/EnhancedMedicationCard";
 import { FloatingActionButton } from "@/components/dashboard/FloatingActionButton";
-import { MyMedicationsSection } from "@/components/dashboard/MyMedicationsSection";
+
+import MedicationCalendarView from "@/components/dashboard/MedicationCalendarView";
 import { QuickActionsBar } from "@/components/dashboard/QuickActionsBar";
 import { StatsCards } from "@/components/dashboard/StatsCards";
+
+// Import new improved components
 import { AppIcon } from "@/components/icons/IconSystem";
+import DocumentComparisonView from "@/components/medical-docs/DocumentComparisonView";
+import DocumentUploadScreen from "@/components/medical-docs/DocumentUploadScreen";
 import { MedicationEntryFlow } from "@/components/medication-entry/MedicationEntryFlow";
+import { ImprovedProgressTrackingCard } from "@/components/medication/ImprovedProgressTrackingCard";
+import { ImprovedTakeMedicationCard } from "@/components/medication/ImprovedTakeMedicationCard";
 import OnboardingFlow from "@/components/OnboardingFlow";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import { mockDataService } from "@/mocks/mockService";
 import { AdherenceData, Medication, MedicationFormData } from "@/mocks/types";
 
-interface MedicationCardProps {
-  medication: Medication;
-  onEdit: (medication: Medication) => void;
-  onDelete: (id: string) => void;
-  isDeleting?: boolean;
-}
-
-function MedicationCard({
-  medication,
-  onEdit,
-  onDelete,
-  isDeleting,
-}: MedicationCardProps) {
-  const fadeAnim = React.useRef(new Animated.Value(0)).current;
-  const scaleAnim = React.useRef(new Animated.Value(0.95)).current;
-
-  React.useEffect(() => {
-    Animated.parallel([
-      Animated.timing(fadeAnim, {
-        toValue: 1,
-        duration: 300,
-        useNativeDriver: true,
-      }),
-      Animated.spring(scaleAnim, {
-        toValue: 1,
-        tension: 50,
-        friction: 8,
-        useNativeDriver: true,
-      }),
-    ]).start();
-  }, [fadeAnim, scaleAnim]);
-
-  const confidence = medication.confidence ?? 1.0;
-  const confidenceColor =
-    confidence > 0.9 ? "#10b981" : confidence > 0.8 ? "#f59e0b" : "#ef4444";
-
-  const handleDelete = () => {
-    Alert.alert(
-      "Delete Medication",
-      `Are you sure you want to delete ${medication.name}?`,
-      [
-        { text: "Cancel", style: "cancel" },
-        {
-          text: "Delete",
-          style: "destructive",
-          onPress: () => onDelete(medication.id),
-        },
-      ]
-    );
+interface SimplificationResult {
+  simplification_id: string;
+  original_text: string;
+  simplified_text: string;
+  metadata: {
+    confidence_score: number;
+    reading_level: string;
+    document_type: string;
+    key_terms_explained: string[];
+    word_count_reduction: number;
+    original_word_count: number;
+    simplified_word_count: number;
   };
-
-  return (
-    <Animated.View
-      style={[
-        {
-          opacity: fadeAnim,
-          transform: [{ scale: scaleAnim }],
-        },
-      ]}
-    >
-      <ThemedView style={styles.medicationCard}>
-        <View style={styles.cardHeader}>
-          <View style={styles.cardTitleSection}>
-            <ThemedText style={styles.medicationName}>
-              {medication.name}
-            </ThemedText>
-            <View
-              style={[
-                styles.confidenceBadge,
-                { backgroundColor: confidenceColor },
-              ]}
-            >
-              <Text style={styles.confidenceText}>
-                {Math.round(confidence * 100)}%
-              </Text>
-            </View>
-          </View>
-          <View style={styles.cardActions}>
-            <TouchableOpacity
-              style={styles.actionButton}
-              onPress={() => onEdit(medication)}
-              accessibilityLabel={`Edit ${medication.name}`}
-              accessibilityHint="Opens edit form for this medication"
-            >
-              <AppIcon name="action_edit" size="small" color="active" />
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[
-                styles.actionButton,
-                isDeleting && styles.actionButtonDisabled,
-              ]}
-              onPress={handleDelete}
-              disabled={isDeleting}
-              accessibilityLabel={`Delete ${medication.name}`}
-              accessibilityHint="Removes this medication from your list"
-            >
-              {isDeleting ? (
-                <ActivityIndicator size="small" color="#ef4444" />
-              ) : (
-                <AppIcon name="action_delete" size="small" color="error" />
-              )}
-            </TouchableOpacity>
-          </View>
-        </View>
-
-        {medication.genericName && (
-          <ThemedText style={styles.genericName}>
-            Generic: {medication.genericName}
-          </ThemedText>
-        )}
-
-        <ThemedText style={styles.dosageText}>
-          {medication.dosage} - {medication.frequency}
-        </ThemedText>
-        <ThemedText style={styles.prescriberText}>
-          Prescribed by: {medication.prescriber}
-        </ThemedText>
-        <ThemedText style={styles.pharmacyText}>
-          Pharmacy: {medication.pharmacy}
-        </ThemedText>
-
-        {medication.notes && (
-          <ThemedText style={styles.notesText}>{medication.notes}</ThemedText>
-        )}
-
-        <View style={styles.statusContainer}>
-          <View
-            style={[
-              styles.statusBadge,
-              {
-                backgroundColor:
-                  medication.isActive ?? true ? "#10b981" : "#6b7280",
-              },
-            ]}
-          >
-            <Text style={styles.statusText}>
-              {medication.isActive ?? true ? "Active" : "Inactive"}
-            </Text>
-          </View>
-        </View>
-      </ThemedView>
-    </Animated.View>
-  );
+  processing_info: {
+    processing_time: number;
+    simplification_level: string;
+    patient_context_used: boolean;
+  };
+  timestamp: string;
 }
 
 // Using MedicationFormData from types.ts - no local interface needed
@@ -206,6 +89,12 @@ export default function MedicationsScreen() {
   const [activeFilter, setActiveFilter] = useState("all");
   const [sortBy, setSortBy] = useState("name");
   const [refreshing, setRefreshing] = useState(false);
+  const [showCalendar, setShowCalendar] = useState(false);
+
+  const [showDocumentUpload, setShowDocumentUpload] = useState(false);
+  const [simplificationResult, setSimplificationResult] =
+    useState<SimplificationResult | null>(null);
+  const [showDocumentComparison, setShowDocumentComparison] = useState(false);
 
   const pulseAnim = React.useRef(new Animated.Value(1)).current;
 
@@ -238,12 +127,13 @@ export default function MedicationsScreen() {
         setTimeout(resolve, isRefresh ? 400 : 800)
       );
       const [allMedications, adherence] = await Promise.all([
+        // Use mock data directly to avoid API errors
         mockDataService.getMedicationsAsync(),
         mockDataService.getAdherenceData(),
       ]);
       setMedications(allMedications);
       setAdherenceData(adherence);
-    } catch (error) {
+    } catch {
       Alert.alert("Error", "Failed to load medications. Please try again.");
     } finally {
       setIsLoading(false);
@@ -284,6 +174,16 @@ export default function MedicationsScreen() {
     }
   };
 
+  const handleDocumentSimplified = (result: SimplificationResult) => {
+    setSimplificationResult(result);
+    setShowDocumentUpload(false);
+    setShowDocumentComparison(true);
+  };
+
+  const handleOpenDocumentUpload = () => {
+    setShowDocumentUpload(true);
+  };
+
   const handleAddMedication = () => {
     setEditingMedication(null);
     setShowEditModal(true);
@@ -301,7 +201,7 @@ export default function MedicationsScreen() {
       await new Promise((resolve) => setTimeout(resolve, 600));
 
       if (editingMedication) {
-        // Update existing medication
+        // Update existing medication using mock data
         await mockDataService.updateMedication(editingMedication.id, {
           ...formData,
           genericName: formData.genericName || undefined,
@@ -309,8 +209,8 @@ export default function MedicationsScreen() {
         });
         Alert.alert("Success", "Medication updated successfully.");
       } else {
-        // Add new medication
-        await mockDataService.addMedication({
+        // Add new medication using mock data
+        await mockDataService.createMedication({
           ...formData,
           genericName: formData.genericName || undefined,
           notes: formData.notes || undefined,
@@ -321,7 +221,7 @@ export default function MedicationsScreen() {
       }
       await loadMedications();
       setShowEditModal(false);
-    } catch (error) {
+    } catch {
       Alert.alert("Error", "Failed to save medication. Please try again.");
     } finally {
       setIsSaving(false);
@@ -345,10 +245,11 @@ export default function MedicationsScreen() {
             try {
               // Simulate API delay
               await new Promise((resolve) => setTimeout(resolve, 500));
+              // Use mock data directly
               await mockDataService.deleteMedication(id);
               await loadMedications();
               Alert.alert("Success", "Medication deleted successfully.");
-            } catch (error) {
+            } catch {
               Alert.alert(
                 "Error",
                 "Failed to delete medication. Please try again."
@@ -398,7 +299,7 @@ export default function MedicationsScreen() {
     }
   };
 
-  const handleMedicationTaken = async (medicationId: string) => {
+  const handleMedicationTaken = async () => {
     // Refresh adherence data when medication is marked as taken
     try {
       const updatedAdherence = await mockDataService.getAdherenceData();
@@ -474,10 +375,6 @@ export default function MedicationsScreen() {
   };
 
   const filteredMedications = getFilteredMedications();
-  const activeMedications = medications.filter((med) => med.isActive ?? true);
-  const inactiveMedications = medications.filter(
-    (med) => !(med.isActive ?? true)
-  );
 
   const renderMedicationList = () => {
     if (filteredMedications.length === 0) {
@@ -526,6 +423,27 @@ export default function MedicationsScreen() {
                   ]}
                 >
                   Scan Bottle
+                </Text>
+              </TouchableOpacity>
+            </View>
+          )}
+          {!searchQuery && activeFilter === "all" && (
+            <View style={styles.emptyActions}>
+              <TouchableOpacity
+                style={[
+                  styles.emptyActionButton,
+                  styles.emptyActionButtonSecondary,
+                ]}
+                onPress={handleOpenDocumentUpload}
+              >
+                <AppIcon name="action_upload" size="small" color="active" />
+                <Text
+                  style={[
+                    styles.emptyActionText,
+                    styles.emptyActionTextSecondary,
+                  ]}
+                >
+                  Simplify Document
                 </Text>
               </TouchableOpacity>
             </View>
@@ -609,29 +527,66 @@ export default function MedicationsScreen() {
           onFilter={handleFilter}
           onSort={handleSort}
           onClear={handleClear}
-          onCalendarPress={() => {
-            /* TODO: Implement calendar view */
-          }}
+          onCalendarPress={() => setShowCalendar(true)}
           searchQuery={searchQuery}
           activeFilter={activeFilter}
           sortBy={sortBy}
         />
 
-        {/* My Medications Section with Enhanced Cards */}
-        <MyMedicationsSection
-          medications={medications}
-          adherenceData={adherenceData}
-          onEdit={handleEditMedication}
-          onDelete={handleDeleteMedication}
-          onMarkTaken={handleMedicationTaken}
-          onViewDetails={handleMedicationDetails}
-          isDeleting={isDeleting}
-        />
+        {/* Take Medications Section - Action-Focused */}
+        <View style={styles.takeMedicationsSection}>
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>Take Medications</Text>
+            <Text style={styles.sectionSubtitle}>Manage your daily doses</Text>
+          </View>
 
-        {/* All Medications List */}
-        <View style={styles.allMedicationsSection}>
-          <Text style={styles.allMedicationsTitle}>All Medications</Text>
-          {renderMedicationList()}
+          {/* Group medications by status */}
+          {medications
+            .filter((med) => med.isActive)
+            .map((medication) => {
+              const adherence = adherenceData.find(
+                (a) => a.medicationId === medication.id
+              );
+              return (
+                <ImprovedTakeMedicationCard
+                  key={medication.id}
+                  medication={medication}
+                  adherenceData={adherence}
+                  onMarkTaken={() => handleMedicationTaken(medication.id)}
+                  onSkip={() => {
+                    /* Handle skip logic */
+                  }}
+                  onViewDetails={() => handleMedicationDetails(medication)}
+                  onEdit={() => handleEditMedication(medication)}
+                  onDelete={() => handleDeleteMedication(medication.id)}
+                  isDeleting={isDeleting === medication.id}
+                />
+              );
+            })}
+        </View>
+
+        {/* Progress Tracking Section - Analytics-Focused */}
+        <View style={styles.progressTrackingSection}>
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>Progress Tracking</Text>
+            <Text style={styles.sectionSubtitle}>Monitor your adherence</Text>
+          </View>
+
+          {medications
+            .filter((med) => med.isActive)
+            .map((medication) => {
+              const adherence = adherenceData.find(
+                (a) => a.medicationId === medication.id
+              );
+              return (
+                <ImprovedProgressTrackingCard
+                  key={`progress-${medication.id}`}
+                  medication={medication}
+                  adherenceData={adherence}
+                  onViewDetails={() => handleMedicationDetails(medication)}
+                />
+              );
+            })}
         </View>
       </ScrollView>
 
@@ -654,6 +609,24 @@ export default function MedicationsScreen() {
       <OnboardingFlow
         visible={showOnboarding}
         onComplete={handleOnboardingComplete}
+      />
+
+      <MedicationCalendarView
+        visible={showCalendar}
+        onClose={() => setShowCalendar(false)}
+        medications={medications}
+      />
+
+      <DocumentUploadScreen
+        visible={showDocumentUpload}
+        onClose={() => setShowDocumentUpload(false)}
+        onDocumentSimplified={handleDocumentSimplified}
+      />
+
+      <DocumentComparisonView
+        visible={showDocumentComparison}
+        onClose={() => setShowDocumentComparison(false)}
+        result={simplificationResult}
       />
     </View>
   );
@@ -921,5 +894,30 @@ const styles = StyleSheet.create({
     color: "white",
     fontSize: 12,
     fontWeight: "600",
+  },
+  // New Improved Sections Styles
+  takeMedicationsSection: {
+    marginTop: 24,
+    marginBottom: 16,
+    paddingHorizontal: 16,
+  },
+  progressTrackingSection: {
+    marginTop: 24,
+    marginBottom: 16,
+    paddingHorizontal: 16,
+  },
+  sectionHeader: {
+    marginBottom: 16,
+  },
+  sectionTitle: {
+    fontSize: 20,
+    fontWeight: "bold",
+    color: "#1f2937",
+    marginBottom: 4,
+  },
+  sectionSubtitle: {
+    fontSize: 14,
+    color: "#6b7280",
+    fontWeight: "500",
   },
 });

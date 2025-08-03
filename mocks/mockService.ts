@@ -1,3 +1,4 @@
+import interactionsData from "./interactions.json";
 import medicationListData from "./medication-list.json";
 import userProfileData from "./mock-user-profile.json";
 import {
@@ -119,7 +120,7 @@ class MockDataService {
   }
 
   // Mock OCR Scanning
-  async scanMedication(imageBase64: string): Promise<ScannedMedicationData> {
+  async scanMedication(): Promise<ScannedMedicationData> {
     await this.delay(2000); // Simulate AI processing time
 
     // Mock OCR results with varying confidence
@@ -230,7 +231,6 @@ class MockDataService {
   async getDashboardStats(): Promise<DashboardStats> {
     await this.delay(300);
 
-    const today = new Date().toISOString().split("T")[0];
     const todaySchedule = await this.getTodaySchedule();
     const dueToday = todaySchedule.medications.filter(
       (med) => !med.taken
@@ -351,10 +351,7 @@ class MockDataService {
     return Array.from(this.adherenceData.values());
   }
 
-  async markMedicationTaken(
-    medicationId: string,
-    scheduledTime: string
-  ): Promise<void> {
+  async markMedicationTaken(medicationId: string): Promise<void> {
     await this.delay(300);
 
     // Update adherence data
@@ -380,6 +377,51 @@ class MockDataService {
       timestamp: new Date().toISOString(),
       read: false,
     });
+  }
+
+  /**
+   * Check drug interactions for all user medications
+   */
+  async checkAllMedicationInteractions(): Promise<{
+    interactions_found: number;
+    interactions: any[];
+  }> {
+    await this.delay(500);
+
+    const activeMedications = this.medications.filter(
+      (med) => med.isActive !== false
+    );
+    const foundInteractions: any[] = [];
+
+    // Check all combinations of active medications
+    for (let i = 0; i < activeMedications.length; i++) {
+      for (let j = i + 1; j < activeMedications.length; j++) {
+        const medA = activeMedications[i];
+        const medB = activeMedications[j];
+
+        // Check if there's an interaction between these medications
+        const interaction = (interactionsData as any[]).find(
+          (int) =>
+            (int.drugA.toLowerCase() === medA.name.toLowerCase() &&
+              int.drugB.toLowerCase() === medB.name.toLowerCase()) ||
+            (int.drugA.toLowerCase() === medB.name.toLowerCase() &&
+              int.drugB.toLowerCase() === medA.name.toLowerCase())
+        );
+
+        if (interaction) {
+          foundInteractions.push({
+            ...interaction,
+            medication1: medA,
+            medication2: medB,
+          });
+        }
+      }
+    }
+
+    return {
+      interactions_found: foundInteractions.length,
+      interactions: foundInteractions,
+    };
   }
 
   private getScheduleCountFromFrequency(frequency: string): number {

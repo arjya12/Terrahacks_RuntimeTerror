@@ -1,3 +1,4 @@
+import apiService from "@/services/api";
 import { useSignUp } from "@clerk/clerk-expo";
 import { Link, useRouter } from "expo-router";
 import * as React from "react";
@@ -30,9 +31,13 @@ export default function SignUpScreen() {
 
       await signUp.prepareEmailAddressVerification({ strategy: "email_code" });
       setPendingVerification(true);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error(JSON.stringify(err, null, 2));
-      Alert.alert("Error", err.errors?.[0]?.message || "Sign up failed");
+      Alert.alert(
+        "Error",
+        (err as { errors?: { message?: string }[] })?.errors?.[0]?.message ||
+          "Sign up failed"
+      );
     }
   };
 
@@ -47,6 +52,43 @@ export default function SignUpScreen() {
       if (signUpAttempt.status === "complete") {
         await setActive({ session: signUpAttempt.createdSessionId });
 
+        // Register user with backend
+        try {
+          const session = signUpAttempt.createdSession;
+          if (session) {
+            // Set auth token for API service
+            const token = await session.getToken();
+            if (token) {
+              apiService.setAuthToken(token);
+
+              // Register user with backend
+              console.log("📝 Registering user with backend...");
+              const user = session.user;
+              const registrationData = {
+                clerk_id: user.id,
+                email: user.primaryEmailAddress?.emailAddress || emailAddress,
+                first_name: user.firstName || "",
+                last_name: user.lastName || "",
+                role: "patient", // Default role for new signups
+              };
+
+              const registrationResponse = await apiService.registerUser(
+                registrationData
+              );
+              console.log(
+                "✅ Backend registration successful:",
+                registrationResponse
+              );
+            }
+          }
+        } catch (backendError) {
+          console.warn(
+            "⚠️ Backend registration failed (continuing anyway):",
+            backendError
+          );
+          // Don't block signup if backend is unavailable
+        }
+
         // Navigate to main app after successful registration
         console.log("🎯 Sign up complete - navigating to main app");
         router.replace("/(tabs)");
@@ -54,9 +96,13 @@ export default function SignUpScreen() {
         console.error(JSON.stringify(signUpAttempt, null, 2));
         Alert.alert("Error", "Verification failed. Please try again.");
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error(JSON.stringify(err, null, 2));
-      Alert.alert("Error", err.errors?.[0]?.message || "Verification failed");
+      Alert.alert(
+        "Error",
+        (err as { errors?: { message?: string }[] })?.errors?.[0]?.message ||
+          "Verification failed"
+      );
     }
   };
 

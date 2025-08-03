@@ -34,7 +34,6 @@ export function ReviewNotesStep({
   allData,
   onUpdate,
   onEditStep,
-  validation,
 }: ReviewNotesStepProps) {
   const { step1, step2, step3 } = allData;
 
@@ -101,7 +100,7 @@ export function ReviewNotesStep({
           </Text>
 
           <View style={styles.reviewGrid}>
-            {reviewItems.map((item, index) => (
+            {reviewItems.map((item) => (
               <TouchableOpacity
                 key={item.label}
                 style={styles.reviewItem}

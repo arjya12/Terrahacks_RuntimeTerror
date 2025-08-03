@@ -4,7 +4,6 @@ import { AppIcon } from "@/components/icons/IconSystem";
 import { DosageOption, FormValidation, FrequencyOption } from "@/mocks/types";
 import React, { useMemo, useState } from "react";
 import {
-  Dimensions,
   ScrollView,
   StyleSheet,
   Text,
@@ -12,8 +11,6 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-
-const { width } = Dimensions.get("window");
 
 interface MedicationInfoStepProps {
   data: {

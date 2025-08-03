@@ -206,7 +206,10 @@ export function MedicationEntryFlow({
     onSave(combinedData);
   };
 
-  const updateStepData = (step: number, data: Partial<any>) => {
+  const updateStepData = (
+    step: number,
+    data: Partial<Record<string, unknown>>
+  ) => {
     setFormData((prev) => ({
       ...prev,
       [`step${step}`]: {

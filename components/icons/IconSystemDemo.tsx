@@ -59,9 +59,9 @@ export function IconSystemDemo() {
           ].map((stat) => (
             <TouchableOpacity key={stat.icon} style={styles.statCard}>
               <AppIcon
-                name={stat.icon as any}
+                name={stat.icon as "status_success"}
                 size="large"
-                color={stat.color as any}
+                color={stat.color as "active"}
               />
               <Text style={styles.statValue}>{stat.value}</Text>
               <Text style={styles.statLabel}>{stat.label}</Text>
@@ -93,7 +93,7 @@ export function IconSystemDemo() {
             },
           ].map((item) => (
             <View key={item.status} style={styles.statusItem}>
-              <StatusIcon status={item.status as any} size="medium" />
+              <StatusIcon status={item.status as "success"} size="medium" />
               <View style={styles.statusText}>
                 <Text style={styles.statusLabel}>{item.label}</Text>
                 <Text style={styles.statusDescription}>{item.description}</Text>
@@ -114,7 +114,7 @@ export function IconSystemDemo() {
             { type: "profile", label: "Profile", active: false },
           ].map((nav) => (
             <TouchableOpacity key={nav.type} style={styles.navItem}>
-              <NavIcon type={nav.type as any} isActive={nav.active} />
+              <NavIcon type={nav.type as "medications"} isActive={nav.active} />
               <Text
                 style={[styles.navLabel, nav.active && styles.navLabelActive]}
               >
@@ -145,7 +145,7 @@ export function IconSystemDemo() {
               ]}
             >
               <FilterIcon
-                filter={filter.filter as any}
+                filter={filter.filter as "all"}
                 isActive={filter.active}
               />
               <Text
@@ -172,7 +172,7 @@ export function IconSystemDemo() {
               key={sort.sort}
               style={[styles.sortItem, sort.active && styles.sortItemActive]}
             >
-              <SortIcon sort={sort.sort as any} isActive={sort.active} />
+              <SortIcon sort={sort.sort as "name"} isActive={sort.active} />
               <Text
                 style={[
                   styles.sortLabel,
@@ -208,9 +208,9 @@ export function IconSystemDemo() {
           ].map((action) => (
             <TouchableOpacity key={action.icon} style={styles.actionItem}>
               <AppIcon
-                name={action.icon as any}
+                name={action.icon as "action_edit"}
                 size="medium"
-                color={action.color as any}
+                color={action.color as "active"}
               />
               <Text style={styles.actionLabel}>{action.label}</Text>
             </TouchableOpacity>
@@ -231,7 +231,11 @@ export function IconSystemDemo() {
             { icon: "med_type_patch", label: "Patch" },
           ].map((type) => (
             <View key={type.icon} style={styles.typeItem}>
-              <AppIcon name={type.icon as any} size="medium" color="default" />
+              <AppIcon
+                name={type.icon as "medication_pill"}
+                size="medium"
+                color="default"
+              />
               <Text style={styles.typeLabel}>{type.label}</Text>
             </View>
           ))}
@@ -250,9 +254,9 @@ export function IconSystemDemo() {
           ].map((time) => (
             <View key={time.icon} style={styles.timeItem}>
               <AppIcon
-                name={time.icon as any}
+                name={time.icon as "medication_time"}
                 size="medium"
-                color={time.color as any}
+                color={time.color as "active"}
               />
               <Text style={styles.timeLabel}>{time.label}</Text>
             </View>
@@ -272,9 +276,9 @@ export function IconSystemDemo() {
           ].map((feedback) => (
             <View key={feedback.icon} style={styles.feedbackItem}>
               <AppIcon
-                name={feedback.icon as any}
+                name={feedback.icon as "status_success"}
                 size="medium"
-                color={feedback.color as any}
+                color={feedback.color as "active"}
               />
               <Text style={styles.feedbackLabel}>{feedback.label}</Text>
             </View>

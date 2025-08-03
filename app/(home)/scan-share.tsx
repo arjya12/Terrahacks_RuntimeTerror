@@ -238,7 +238,7 @@ export default function ScanShareScreen() {
       };
       setScannedToken(token);
       setShowMedicationModal(true);
-    } catch (error) {
+    } catch {
       Alert.alert(
         "Invalid Code",
         "This sharing code is not valid or has expired."
