@@ -18,8 +18,7 @@
     "setup-gemini": "node ./scripts/setup-gemini.js",
     "test-supabase": "node ./scripts/test-supabase-connection.js",
     "test-medication-crud": "node ./scripts/test-medication-crud.js",
-    "test-file-upload": "node ./scripts/test-file-upload.js",
-    "test-all": "npm run test-supabase && npm run test-medication-crud && npm run test-file-upload"
+    "test-file-upload": "node ./scripts/test-file-upload.js"
   },
   "dependencies": {
     "@clerk/clerk-expo": "^2.14.14",
